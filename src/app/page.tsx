@@ -81,21 +81,21 @@ export default function Chat() {
   })
 
   return (
-    <main className="mx-auto max-w-6xl p-6">
+    <main className="mx-auto max-w-6xl p-6 min-h-screen transition-colors duration-200">
       {/* Header with title and model selector */}
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold">Kimi on Netlify</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Kimi on Netlify</h1>
 
         {/* Model selector */}
         <div className="flex items-center gap-3">
-          <label className="text-sm font-medium text-gray-700">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
             AI Model:
           </label>
           <select
             value={selectedModel}
             onChange={(e) => setSelectedModel(e.target.value)}
             disabled={isLoading}
-            className="border-2 border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed min-w-[250px]"
+            className="border-2 border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed min-w-[250px] transition-colors duration-200"
           >
             {KIMI_MODELS.map((model) => (
               <option key={model.id} value={model.id}>
@@ -108,13 +108,13 @@ export default function Chat() {
 
       {/* Error display */}
       {error && (
-        <div className="border border-red-300 rounded p-4 mb-4 bg-red-50 text-red-700">
+        <div className="border border-red-300 dark:border-red-600 rounded p-4 mb-4 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 transition-colors duration-200">
           <strong>Error:</strong> {error.message || 'An error occurred while sending your message.'}
         </div>
       )}
 
       {/* Chat messages container */}
-      <div className="border rounded-lg p-6 h-[600px] overflow-y-auto mb-4 bg-gray-50 shadow-inner">
+      <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 h-[600px] overflow-y-auto mb-4 bg-gray-50 dark:bg-gray-800/50 shadow-inner transition-colors duration-200">
         {/*
           Render all messages in the conversation.
           Each message has:
@@ -123,24 +123,24 @@ export default function Chat() {
           - content: the actual text content
         */}
         {messages.length === 0 && (
-          <div className="text-gray-500 text-center">
+          <div className="text-gray-500 dark:text-gray-400 text-center">
             Start a conversation with Kimi AI...
           </div>
         )}
         {messages.map(m => (
-          <div key={m.id} className={`mb-4 p-3 rounded-lg ${m.role === 'user' ? 'bg-blue-100 ml-8' : 'bg-white mr-8'}`}>
+          <div key={m.id} className={`mb-4 p-3 rounded-lg transition-colors duration-200 ${m.role === 'user' ? 'bg-blue-100 dark:bg-blue-900/30 ml-8' : 'bg-white dark:bg-gray-700 mr-8'}`}>
             {/* Show who is speaking (user or assistant) */}
-            <div className="font-semibold text-sm text-gray-600 mb-1">
+            <div className="font-semibold text-sm text-gray-600 dark:text-gray-400 mb-1">
               {m.role === 'user' ? 'You' : 'Kimi AI'}
             </div>
             {/* Show the message content, preserving line breaks with whitespace-pre-wrap */}
-            <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">{m.content}</div>
+            <div className="whitespace-pre-wrap text-gray-800 dark:text-gray-200 leading-relaxed">{m.content}</div>
           </div>
         ))}
         {isLoading && (
-          <div className="mb-4 p-3 rounded-lg bg-white mr-8">
-            <div className="font-semibold text-sm text-gray-600 mb-1">Kimi AI</div>
-            <div className="text-gray-500 italic">Thinking...</div>
+          <div className="mb-4 p-3 rounded-lg bg-white dark:bg-gray-700 mr-8 transition-colors duration-200">
+            <div className="font-semibold text-sm text-gray-600 dark:text-gray-400 mb-1">Kimi AI</div>
+            <div className="text-gray-500 dark:text-gray-400 italic">Thinking...</div>
           </div>
         )}
       </div>
@@ -152,17 +152,17 @@ export default function Chat() {
           value={input} // Controlled by useChat hook
           onChange={handleInputChange} // Updates input state in useChat hook
           placeholder="Ask Kimi anything..."
-          className="flex-1 border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none text-lg"
+          className="flex-1 border-2 border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none text-lg transition-colors duration-200"
           disabled={isLoading}
         />
         {/* Submit button - when clicked, handleSubmit sends the message to our API */}
         <button
           type="submit"
           disabled={isLoading || !input.trim()}
-          className={`px-6 py-3 rounded-lg text-white font-semibold transition-colors ${
+          className={`px-6 py-3 rounded-lg text-white font-semibold transition-colors duration-200 ${
             isLoading || !input.trim()
-              ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800'
+              ? 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'
+              : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 dark:bg-blue-700 dark:hover:bg-blue-600 dark:active:bg-blue-500'
           }`}
         >
           {isLoading ? 'Sending...' : 'Send'}

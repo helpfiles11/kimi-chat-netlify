@@ -69,10 +69,10 @@ export default function AuthWrapper({ children }: AuthWrapperProps) {
   // Show loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400 mx-auto"></div>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">Loading...</p>
         </div>
       </div>
     )
@@ -81,11 +81,11 @@ export default function AuthWrapper({ children }: AuthWrapperProps) {
   // Show login form if not authenticated
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="max-w-md w-full space-y-8 p-8">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+        <div className="max-w-md w-full space-y-8 p-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg transition-colors duration-200">
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-900">Access Required</h2>
-            <p className="mt-2 text-gray-600">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Access Required</h2>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">
               Enter password to access Kimi Chat
             </p>
           </div>
@@ -97,14 +97,14 @@ export default function AuthWrapper({ children }: AuthWrapperProps) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter password"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors duration-200"
                 disabled={isLoading}
                 required
               />
             </div>
 
             {error && (
-              <div className="text-red-600 text-sm text-center bg-red-50 p-2 rounded">
+              <div className="text-red-600 dark:text-red-400 text-sm text-center bg-red-50 dark:bg-red-900/20 p-2 rounded transition-colors duration-200">
                 {error}
               </div>
             )}
@@ -112,17 +112,17 @@ export default function AuthWrapper({ children }: AuthWrapperProps) {
             <button
               type="submit"
               disabled={isLoading || !password.trim()}
-              className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
+              className={`w-full py-2 px-4 rounded-lg font-medium transition-colors duration-200 ${
                 isLoading || !password.trim()
-                  ? 'bg-gray-300 cursor-not-allowed text-gray-500'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  ? 'bg-gray-300 dark:bg-gray-600 cursor-not-allowed text-gray-500 dark:text-gray-400'
+                  : 'bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-700 dark:hover:bg-blue-600'
               }`}
             >
               {isLoading ? 'Authenticating...' : 'Access Chat'}
             </button>
           </form>
 
-          <div className="text-center text-sm text-gray-500">
+          <div className="text-center text-sm text-gray-500 dark:text-gray-400">
             <p>This protects your API usage from unauthorized access.</p>
           </div>
         </div>
