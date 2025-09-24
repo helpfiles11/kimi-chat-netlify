@@ -3,6 +3,14 @@
 ## [Unreleased] - 2024-12-XX
 
 ### Added
+- **Context System**: Provide additional context to enhance AI responses
+  - Persistent context textarea (2000 character limit)
+  - localStorage persistence across browser sessions
+  - Context injected as system messages in API calls
+  - Visual feedback when context is active
+  - Character counter and clear context button
+  - Only +1.1kB bundle size impact
+
 - **Copy Functionality**: One-click copy of AI responses with visual feedback
   - Native clipboard API implementation (no external dependencies)
   - Hover-to-reveal copy button on AI messages

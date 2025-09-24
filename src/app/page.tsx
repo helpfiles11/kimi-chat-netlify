@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 // In AI SDK v3, useChat is available from 'ai/react'
 import { useChat } from 'ai/react'
 import CopyButton from '../components/CopyButton'
@@ -50,6 +50,22 @@ export default function Chat() {
   // Model selection state
   const [selectedModel, setSelectedModel] = useState(KIMI_MODELS[0].id)
 
+  // Context state - provides additional context/instructions to the AI
+  const [context, setContext] = useState('')
+
+  // Load context from localStorage on component mount
+  useEffect(() => {
+    const savedContext = localStorage.getItem('kimi-chat-context')
+    if (savedContext) {
+      setContext(savedContext)
+    }
+  }, [])
+
+  // Save context to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('kimi-chat-context', context)
+  }, [context])
+
   // useChat is a powerful hook that manages all chat logic for us:
   // - messages: Array of all chat messages (user and AI)
   // - input: Current text in the input field
@@ -65,7 +81,8 @@ export default function Chat() {
   } = useChat({
     api: '/api/chat', // This points to our backend API route at src/app/api/chat/route.ts
     body: {
-      model: selectedModel // Send the selected model with each request
+      model: selectedModel, // Send the selected model with each request
+      context: context.trim() || undefined // Send context only if it's not empty
     },
     onError: (error) => {
       console.error('Chat error:', error)
@@ -105,6 +122,39 @@ export default function Chat() {
             ))}
           </select>
         </div>
+      </div>
+
+      {/* Context Input Section */}
+      <div className="mb-4">
+        <div className="flex items-center justify-between mb-2">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Additional Context
+          </label>
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            {context.length}/2000 characters
+          </span>
+        </div>
+        <textarea
+          value={context}
+          onChange={(e) => setContext(e.target.value.slice(0, 2000))}
+          placeholder="Provide additional context, documents, instructions, or background information for the AI..."
+          className="w-full h-24 border-2 border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none resize-none transition-colors duration-200"
+          disabled={isLoading}
+        />
+        {context && (
+          <div className="mt-1 flex items-center justify-between">
+            <span className="text-xs text-green-600 dark:text-green-400">
+              ✓ Context will be included with your messages
+            </span>
+            <button
+              onClick={() => setContext('')}
+              className="text-xs text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors duration-200"
+              disabled={isLoading}
+            >
+              Clear Context
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Error display */}

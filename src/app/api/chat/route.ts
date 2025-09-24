@@ -46,9 +46,9 @@ export async function POST(req: Request) {
       )
     }
 
-    // Extract the messages array and model from the request body
-    // Format: {messages: [{role:'user', content:'hello'}], model: 'kimi-k2-0711-preview'}
-    const { messages, model } = await req.json()
+    // Extract the messages array, model, and context from the request body
+    // Format: {messages: [{role:'user', content:'hello'}], model: 'kimi-k2-0711-preview', context: 'additional info'}
+    const { messages, model, context } = await req.json()
 
     // Use the provided model or default to moonshot-v1-auto
     const selectedModel = model || 'moonshot-v1-auto'
@@ -61,13 +61,37 @@ export async function POST(req: Request) {
       )
     }
 
-    console.log('Sending request to Kimi API with', messages.length, 'messages using model:', selectedModel)
+    // Prepare messages with context if provided
+    const contextualMessages = [...messages]
+
+    // If context is provided, add it as a system message at the beginning
+    if (context && context.trim()) {
+      const systemMessage = {
+        role: 'system' as const,
+        content: `Additional context: ${context.trim()}`
+      }
+
+      // Check if there's already a system message and merge with it, or add new one
+      const existingSystemIndex = contextualMessages.findIndex(msg => msg.role === 'system')
+      if (existingSystemIndex >= 0) {
+        // Merge with existing system message
+        contextualMessages[existingSystemIndex].content += `\n\n${systemMessage.content}`
+      } else {
+        // Add as new system message at the beginning
+        contextualMessages.unshift(systemMessage)
+      }
+    }
+
+    console.log('Sending request to Kimi API with', contextualMessages.length, 'messages using model:', selectedModel)
+    if (context) {
+      console.log('Context provided:', context.slice(0, 100) + (context.length > 100 ? '...' : ''))
+    }
 
     // Call the Kimi API to get a chat completion
     const response = await openai.chat.completions.create({
       model: selectedModel,               // Use the selected model from frontend
       stream: true,                       // Enable streaming for real-time responses
-      messages,                          // Pass the conversation history to the AI
+      messages: contextualMessages,       // Pass the conversation history with context to the AI
     })
 
     console.log('Received response from Kimi API, creating stream')
