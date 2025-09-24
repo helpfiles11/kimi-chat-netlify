@@ -46,9 +46,12 @@ export async function POST(req: Request) {
       )
     }
 
-    // Extract the messages array from the request body
-    // Format: [{role:'user', content:'hello'}, {role:'assistant', content:'hi there'}]
-    const { messages } = await req.json()
+    // Extract the messages array and model from the request body
+    // Format: {messages: [{role:'user', content:'hello'}], model: 'kimi-k2-0711-preview'}
+    const { messages, model } = await req.json()
+
+    // Use the provided model or default to moonshot-v1-auto
+    const selectedModel = model || 'moonshot-v1-auto'
 
     if (!messages || !Array.isArray(messages)) {
       console.error('Invalid messages format:', messages)
@@ -58,13 +61,13 @@ export async function POST(req: Request) {
       )
     }
 
-    console.log('Sending request to Kimi API with', messages.length, 'messages')
+    console.log('Sending request to Kimi API with', messages.length, 'messages using model:', selectedModel)
 
     // Call the Kimi API to get a chat completion
     const response = await openai.chat.completions.create({
-      model: 'kimi-k2-0711-preview',       // Kimi model - you can change this to other Kimi models
-      stream: true,                        // Enable streaming for real-time responses
-      messages,                           // Pass the conversation history to the AI
+      model: selectedModel,               // Use the selected model from frontend
+      stream: true,                       // Enable streaming for real-time responses
+      messages,                          // Pass the conversation history to the AI
     })
 
     console.log('Received response from Kimi API, creating stream')

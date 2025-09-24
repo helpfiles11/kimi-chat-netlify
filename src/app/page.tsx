@@ -1,4 +1,5 @@
 'use client'
+import React, { useState } from 'react'
 // In AI SDK v3, useChat is available from 'ai/react'
 import { useChat } from 'ai/react'
 
@@ -15,7 +16,39 @@ import { useChat } from 'ai/react'
  * 4. The backend streams the AI response back, which is automatically handled by useChat
  * 5. The UI updates in real-time as the AI types its response
  */
+// Available Kimi AI models with descriptions
+const KIMI_MODELS = [
+  {
+    id: 'moonshot-v1-auto',
+    name: 'Moonshot V1 (Auto)',
+    description: 'Automatically selects the most appropriate model for your task'
+  },
+  {
+    id: 'kimi-k2-0711-preview',
+    name: 'Kimi K2 (Preview)',
+    description: 'Latest Kimi model with enhanced capabilities'
+  },
+  {
+    id: 'moonshot-v1-8k',
+    name: 'Moonshot V1 (8K)',
+    description: 'Standard model with 8K context length'
+  },
+  {
+    id: 'moonshot-v1-32k',
+    name: 'Moonshot V1 (32K)',
+    description: 'Extended context model with 32K token support'
+  },
+  {
+    id: 'moonshot-v1-128k',
+    name: 'Moonshot V1 (128K)',
+    description: 'Large context model with 128K token support'
+  }
+]
+
 export default function Chat() {
+  // Model selection state
+  const [selectedModel, setSelectedModel] = useState(KIMI_MODELS[0].id)
+
   // useChat is a powerful hook that manages all chat logic for us:
   // - messages: Array of all chat messages (user and AI)
   // - input: Current text in the input field
@@ -30,6 +63,9 @@ export default function Chat() {
     error
   } = useChat({
     api: '/api/chat', // This points to our backend API route at src/app/api/chat/route.ts
+    body: {
+      model: selectedModel // Send the selected model with each request
+    },
     onError: (error) => {
       console.error('Chat error:', error)
     },
@@ -46,8 +82,29 @@ export default function Chat() {
 
   return (
     <main className="mx-auto max-w-6xl p-6">
-      {/* App title */}
-      <h1 className="text-2xl font-bold mb-4">Kimi on Netlify</h1>
+      {/* Header with title and model selector */}
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold">Kimi on Netlify</h1>
+
+        {/* Model selector */}
+        <div className="flex items-center gap-3">
+          <label className="text-sm font-medium text-gray-700">
+            AI Model:
+          </label>
+          <select
+            value={selectedModel}
+            onChange={(e) => setSelectedModel(e.target.value)}
+            disabled={isLoading}
+            className="border-2 border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed min-w-[250px]"
+          >
+            {KIMI_MODELS.map((model) => (
+              <option key={model.id} value={model.id}>
+                {model.name} - {model.description}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
 
       {/* Error display */}
       {error && (
