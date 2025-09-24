@@ -16,7 +16,31 @@
 [![Netlify Status](https://api.netlify.com/api/v1/badges/YOUR_SITE_ID/deploy-status)](https://app.netlify.com/sites/kimichatapp/deploys)
 ```
 
-### 2. MOONSHOT_API_KEY Environment Variable Error
+### 2. Netlify Secrets Scanning Error
+
+**Issue**: Build fails with "Secrets scanning found secrets in build" error.
+
+**Root Cause**: API keys are being embedded in the client-side bundle instead of staying server-side only.
+
+**Solution**: Remove the `env` configuration from `next.config.ts` that embeds environment variables in the bundle:
+
+```typescript
+// ❌ WRONG - This embeds secrets in client bundle
+const nextConfig = {
+  env: {
+    MOONSHOT_API_KEY: process.env.MOONSHOT_API_KEY, // This causes security scan failure
+  }
+}
+
+// ✅ CORRECT - Keep secrets server-side only
+const nextConfig = {
+  serverExternalPackages: ['openai'], // Only optimization configs
+}
+```
+
+Environment variables should only be accessed in API routes via `process.env.MOONSHOT_API_KEY`.
+
+### 3. MOONSHOT_API_KEY Environment Variable Error
 
 **Issue**: API key not found despite being set in Netlify UI.
 
@@ -35,24 +59,25 @@
 - **Check**: Ensure variables are set for "Production" context
 - **Location**: Netlify Dashboard → Environment variables → "Values for Production"
 
-#### D. Next.js Configuration
-Add to `next.config.ts`:
-```typescript
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  env: {
-    MOONSHOT_API_KEY: process.env.MOONSHOT_API_KEY,
-    AUTH_PASSWORD: process.env.AUTH_PASSWORD,
-  },
-  // For Netlify deployment
-  trailingSlash: true,
-  images: {
-    unoptimized: true,
-  },
-}
+#### D. Next.js Configuration Issues
+**IMPORTANT**: Do NOT use the `env` configuration in `next.config.ts` for API keys as it embeds them in the client-side bundle, causing security issues and Netlify secrets scanning failures.
 
-export default nextConfig
+**Correct configuration**:
+```typescript
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  // Netlify deployment optimizations
+  trailingSlash: false,
+
+  // Optimize for serverless functions
+  serverExternalPackages: ['openai'],
+};
+
+export default nextConfig;
 ```
+
+Environment variables like `MOONSHOT_API_KEY` should only be accessed server-side in API routes using `process.env.MOONSHOT_API_KEY`.
 
 ### 3. 404 Error on Netlify
 
