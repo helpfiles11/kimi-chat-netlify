@@ -75,6 +75,33 @@ npm run dev
 
 5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+### Docker Setup (Alternative)
+
+If you prefer using Docker for development:
+
+1. Build the Docker image:
+```bash
+docker build -t kimi-chat-app .
+```
+
+2. Run the container with environment variables:
+```bash
+docker run -p 3000:3000 \
+  -e MOONSHOT_API_KEY=your_kimi_api_key_here \
+  -e AUTH_PASSWORD=your_secure_password_here \
+  -v $(pwd):/app \
+  -v /app/node_modules \
+  kimi-chat-app
+```
+
+3. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+The Docker setup includes:
+- Development environment with hot reload
+- Volume mounting for live code changes
+- Proper environment variable injection
+- Optimized build with `.dockerignore`
+
 ## Available Scripts
 
 - `npm run dev` - Start development server
