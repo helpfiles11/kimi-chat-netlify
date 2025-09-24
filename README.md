@@ -38,12 +38,15 @@ A modern, real-time AI chat application built with Next.js 15 and integrated wit
 
 ## Technology Stack
 
-- **Frontend**: Next.js 15, React 19, TypeScript
-- **Styling**: Tailwind CSS v4
-- **AI Integration**: Kimi AI via OpenAI-compatible API
-- **Streaming**: Vercel AI SDK v3
-- **Deployment**: Netlify with serverless functions
-- **Development**: ESLint, TypeScript strict mode
+- **Frontend**: Next.js 15.5, React 19, TypeScript 5
+- **Styling**: Tailwind CSS v4 with CSS-in-JS
+- **AI Integration**: Moonshot AI via OpenAI-compatible SDK v4
+- **Tool System**: Custom tool calling with code execution
+- **File Processing**: Multi-format support with server upload
+- **Streaming**: Vercel AI SDK v3 with real-time responses
+- **Cost Tracking**: Token estimation and balance monitoring
+- **Deployment**: Netlify with Edge Functions, Docker support
+- **Development**: ESLint 9, TypeScript strict mode, Node.js 20
 
 ## Project Structure
 
@@ -51,12 +54,24 @@ A modern, real-time AI chat application built with Next.js 15 and integrated wit
 src/
 ├── app/
 │   ├── layout.tsx          # Root layout with global styles
-│   ├── page.tsx            # Main chat interface
+│   ├── page.tsx            # Main chat interface with tool calling
 │   ├── globals.css         # Global Tailwind styles
 │   └── api/
-│       └── chat/
-│           └── route.ts    # Chat API endpoint
-├── netlify.toml            # Netlify deployment configuration
+│       ├── auth/           # Authentication system
+│       ├── chat/           # Enhanced chat with tool support
+│       ├── balance/        # Account balance checking
+│       ├── estimate-tokens/# Token cost estimation
+│       ├── upload-file/    # File upload to Moonshot API
+│       └── tools/          # Tool execution endpoints
+│           ├── calculator/ # Mathematical operations
+│           └── code-runner/# Code execution (JS/Python)
+├── components/
+│   ├── CopyButton.tsx      # Response copy functionality
+│   ├── FileUpload.tsx      # Local file processing
+│   ├── EnhancedFileUpload.tsx # Dual-mode file handling
+│   └── UsageInfo.tsx       # Balance and token display
+├── netlify.toml            # Netlify deployment config
+├── Dockerfile              # Multi-stage Docker setup
 └── package.json           # Dependencies and scripts
 ```
 
@@ -64,8 +79,8 @@ src/
 
 ### Prerequisites
 
-- Node.js 18 or higher
-- npm or yarn
+- Node.js 20 or higher (recommended for Next.js 15)
+- npm, yarn, or pnpm
 - Kimi AI API key from [Moonshot AI Platform](https://platform.moonshot.cn/)
 
 ### Installation
@@ -101,30 +116,39 @@ npm run dev
 
 ### Docker Setup (Alternative)
 
-If you prefer using Docker for development:
+Multi-stage Docker setup for both development and production:
 
-1. Build the Docker image:
+**Development:**
 ```bash
-docker build -t kimi-chat-app .
-```
+# Build development image
+docker build --target development -t kimi-chat-dev .
 
-2. Run the container with environment variables:
-```bash
+# Run development container with hot reload
 docker run -p 3000:3000 \
-  -e MOONSHOT_API_KEY=your_kimi_api_key_here \
-  -e AUTH_PASSWORD=your_secure_password_here \
+  -e MOONSHOT_API_KEY=your_api_key_here \
+  -e AUTH_PASSWORD=your_password_here \
   -v $(pwd):/app \
   -v /app/node_modules \
-  kimi-chat-app
+  kimi-chat-dev
 ```
 
-3. Open [http://localhost:3000](http://localhost:3000) in your browser.
+**Production:**
+```bash
+# Build production image
+docker build --target production -t kimi-chat-prod .
 
-The Docker setup includes:
-- Development environment with hot reload
-- Volume mounting for live code changes
-- Proper environment variable injection
-- Optimized build with `.dockerignore`
+# Run production container
+docker run -p 3000:3000 \
+  -e MOONSHOT_API_KEY=your_api_key_here \
+  -e AUTH_PASSWORD=your_password_here \
+  kimi-chat-prod
+```
+
+**Features:**
+- Node.js 20 Alpine for optimal performance
+- Multi-stage builds for smaller production images
+- Non-root user for enhanced security
+- Hot reload in development mode
 
 ## Available Scripts
 
@@ -240,15 +264,16 @@ The app includes a simple password protection system to prevent unauthorized acc
 
 ## Browser Compatibility
 
-- Chrome 90+
-- Firefox 88+
-- Safari 14+
-- Edge 90+
+- Chrome 100+
+- Firefox 100+
+- Safari 15+
+- Edge 100+
 
 Requires modern browser with support for:
-- ES2017 features
-- Fetch API
-- Server-sent events
+- ES2022 features (for React 19)
+- Fetch API and FormData
+- Server-sent events (for streaming)
+- File API (for drag & drop uploads)
 
 ## Contributing
 
