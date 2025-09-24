@@ -21,14 +21,40 @@ export default function Chat() {
   // - input: Current text in the input field
   // - handleInputChange: Function to update the input field
   // - handleSubmit: Function that sends the message to our API when form is submitted
-  const { messages, input, handleInputChange, handleSubmit } = useChat({
-    api: '/api/chat' // This points to our backend API route at src/app/api/chat/route.ts
+  const {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit,
+    isLoading,
+    error
+  } = useChat({
+    api: '/api/chat', // This points to our backend API route at src/app/api/chat/route.ts
+    onError: (error) => {
+      console.error('Chat error:', error)
+    },
+    onFinish: (message) => {
+      console.log('Chat finished:', message)
+    },
+    onResponse: (response) => {
+      console.log('Chat response received:', response.status)
+      if (!response.ok) {
+        console.error('Chat response not ok:', response.status, response.statusText)
+      }
+    }
   })
 
   return (
     <main className="mx-auto max-w-2xl p-6">
       {/* App title */}
       <h1 className="text-2xl font-bold mb-4">Kimi on Netlify</h1>
+
+      {/* Error display */}
+      {error && (
+        <div className="border border-red-300 rounded p-4 mb-4 bg-red-50 text-red-700">
+          <strong>Error:</strong> {error.message || 'An error occurred while sending your message.'}
+        </div>
+      )}
 
       {/* Chat messages container */}
       <div className="border rounded p-4 h-96 overflow-y-auto mb-4 bg-gray-50">
@@ -39,14 +65,25 @@ export default function Chat() {
           - role: 'user' or 'assistant'
           - content: the actual text content
         */}
+        {messages.length === 0 && (
+          <div className="text-gray-500 text-center">
+            Start a conversation with Kimi AI...
+          </div>
+        )}
         {messages.map(m => (
           <div key={m.id} className="mb-2">
             {/* Show who is speaking (user or assistant) */}
-            <span className="font-semibold">{m.role}:</span>
+            <span className="font-semibold">{m.role === 'user' ? 'You' : 'Kimi'}:</span>
             {/* Show the message content, preserving line breaks with whitespace-pre-wrap */}
             <span className="ml-2 whitespace-pre-wrap">{m.content}</span>
           </div>
         ))}
+        {isLoading && (
+          <div className="mb-2">
+            <span className="font-semibold">Kimi:</span>
+            <span className="ml-2 text-gray-500">Thinking...</span>
+          </div>
+        )}
       </div>
 
       {/* Chat input form */}
@@ -59,7 +96,17 @@ export default function Chat() {
           className="flex-1 border rounded px-3 py-2"
         />
         {/* Submit button - when clicked, handleSubmit sends the message to our API */}
-        <button className="px-4 py-2 bg-blue-600 text-white rounded">Send</button>
+        <button
+          type="submit"
+          disabled={isLoading || !input.trim()}
+          className={`px-4 py-2 rounded text-white ${
+            isLoading || !input.trim()
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-blue-600 hover:bg-blue-700'
+          }`}
+        >
+          {isLoading ? 'Sending...' : 'Send'}
+        </button>
       </form>
     </main>
   )
