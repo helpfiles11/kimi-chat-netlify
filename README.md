@@ -1,6 +1,6 @@
 # Kimi Chat Application
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/YOUR_SITE_ID_HERE/deploy-status)](https://app.netlify.com/sites/kimichatapp/deploys)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/52cff13c-ef4d-478b-ade2-c2a8ce2e837b/deploy-status)](https://app.netlify.com/projects/kimichatapp/deploys)
 
 A modern, real-time AI chat application built with Next.js 15 and integrated with Kimi AI (Moonshot AI). Features streaming responses, responsive design, and seamless deployment on Netlify.
 
