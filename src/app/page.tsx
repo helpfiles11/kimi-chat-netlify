@@ -30,6 +30,9 @@ export default function Chat() {
     error
   } = useChat({
     api: '/api/chat', // This points to our backend API route at src/app/api/chat/route.ts
+    headers: {
+      'Authorization': `Bearer ${process.env.NEXT_PUBLIC_AUTH_TOKEN || 'development'}`
+    },
     onError: (error) => {
       console.error('Chat error:', error)
     },
@@ -45,7 +48,7 @@ export default function Chat() {
   })
 
   return (
-    <main className="mx-auto max-w-2xl p-6">
+    <main className="mx-auto max-w-6xl p-6">
       {/* App title */}
       <h1 className="text-2xl font-bold mb-4">Kimi on Netlify</h1>
 
@@ -57,7 +60,7 @@ export default function Chat() {
       )}
 
       {/* Chat messages container */}
-      <div className="border rounded p-4 h-96 overflow-y-auto mb-4 bg-gray-50">
+      <div className="border rounded-lg p-6 h-[600px] overflow-y-auto mb-4 bg-gray-50 shadow-inner">
         {/*
           Render all messages in the conversation.
           Each message has:
@@ -71,38 +74,41 @@ export default function Chat() {
           </div>
         )}
         {messages.map(m => (
-          <div key={m.id} className="mb-2">
+          <div key={m.id} className={`mb-4 p-3 rounded-lg ${m.role === 'user' ? 'bg-blue-100 ml-8' : 'bg-white mr-8'}`}>
             {/* Show who is speaking (user or assistant) */}
-            <span className="font-semibold">{m.role === 'user' ? 'You' : 'Kimi'}:</span>
+            <div className="font-semibold text-sm text-gray-600 mb-1">
+              {m.role === 'user' ? 'You' : 'Kimi AI'}
+            </div>
             {/* Show the message content, preserving line breaks with whitespace-pre-wrap */}
-            <span className="ml-2 whitespace-pre-wrap">{m.content}</span>
+            <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">{m.content}</div>
           </div>
         ))}
         {isLoading && (
-          <div className="mb-2">
-            <span className="font-semibold">Kimi:</span>
-            <span className="ml-2 text-gray-500">Thinking...</span>
+          <div className="mb-4 p-3 rounded-lg bg-white mr-8">
+            <div className="font-semibold text-sm text-gray-600 mb-1">Kimi AI</div>
+            <div className="text-gray-500 italic">Thinking...</div>
           </div>
         )}
       </div>
 
       {/* Chat input form */}
-      <form onSubmit={handleSubmit} className="flex gap-2">
+      <form onSubmit={handleSubmit} className="flex gap-3">
         {/* Text input for typing messages */}
         <input
           value={input} // Controlled by useChat hook
           onChange={handleInputChange} // Updates input state in useChat hook
-          placeholder="Ask Kimi…"
-          className="flex-1 border rounded px-3 py-2"
+          placeholder="Ask Kimi anything..."
+          className="flex-1 border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none text-lg"
+          disabled={isLoading}
         />
         {/* Submit button - when clicked, handleSubmit sends the message to our API */}
         <button
           type="submit"
           disabled={isLoading || !input.trim()}
-          className={`px-4 py-2 rounded text-white ${
+          className={`px-6 py-3 rounded-lg text-white font-semibold transition-colors ${
             isLoading || !input.trim()
               ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-blue-600 hover:bg-blue-700'
+              : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800'
           }`}
         >
           {isLoading ? 'Sending...' : 'Send'}

@@ -5,7 +5,8 @@ A modern, real-time AI chat application built with Next.js 15 and integrated wit
 ## Features
 
 - **Real-time Streaming**: AI responses appear word-by-word as they are generated
-- **Modern UI**: Clean, responsive interface built with Tailwind CSS
+- **Modern UI**: Clean, responsive interface built with Tailwind CSS (full-width layout)
+- **Password Protection**: Simple authentication system protects your API usage
 - **Serverless Architecture**: API routes deployed as serverless functions
 - **Type Safety**: Full TypeScript implementation
 - **Production Ready**: Optimized for performance and scalability
@@ -60,9 +61,10 @@ npm install
 cp .env.local.example .env.local
 ```
 
-Add your Kimi API key to `.env.local`:
+Add your configuration to `.env.local`:
 ```
 MOONSHOT_API_KEY=your_kimi_api_key_here
+AUTH_PASSWORD=your_secure_password_here
 ```
 
 4. Start the development server:
@@ -94,6 +96,7 @@ npm run dev
 | Variable | Description | Required |
 |----------|-------------|----------|
 | `MOONSHOT_API_KEY` | Your Kimi AI API key | Yes |
+| `AUTH_PASSWORD` | Password to access the chat interface | Yes |
 
 ## Architecture Overview
 
@@ -116,9 +119,26 @@ npm run dev
 4. Streaming response flows back to frontend
 5. UI updates in real-time as response generates
 
+## Authentication System
+
+The app includes a simple password protection system to prevent unauthorized access to your API tokens:
+
+### How It Works
+1. **Password Protection**: Users must enter a password before accessing the chat
+2. **Session-based**: Authentication persists until browser session ends
+3. **API Protection**: Chat API endpoints require authentication headers
+4. **Environment-based**: Password stored securely in environment variables
+
+### Setup for Production
+1. Set `AUTH_PASSWORD` in your Netlify environment variables
+2. Choose a secure password (recommended: 12+ characters)
+3. Share the password only with authorized users
+4. The password protects your API usage and prevents abuse
+
 ## Security Considerations
 
 - API keys stored in environment variables only
+- Password protection prevents unauthorized API usage
 - No sensitive data exposed to client-side code
 - Comprehensive `.gitignore` prevents credential leaks
 - Input validation on both frontend and backend

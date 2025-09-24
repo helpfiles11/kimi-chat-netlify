@@ -11,6 +11,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css"; // Import global Tailwind CSS styles
+import AuthWrapper from "../components/AuthWrapper";
 
 // Load the Geist font family from Google Fonts
 // Geist is Vercel's custom font designed for optimal readability
@@ -51,10 +52,13 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {/*
-          The {children} gets replaced with the actual page content.
+          The AuthWrapper provides authentication protection for the entire app.
+          The {children} gets replaced with the actual page content only after authentication.
           For our app, this will be the Chat component from page.tsx
         */}
-        {children}
+        <AuthWrapper>
+          {children}
+        </AuthWrapper>
       </body>
     </html>
   );

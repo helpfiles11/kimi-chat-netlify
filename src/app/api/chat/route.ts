@@ -37,6 +37,19 @@ const openai = new OpenAI({
  */
 export async function POST(req: Request) {
   try {
+    // Check authentication (basic header-based auth for API protection)
+    const authHeader = req.headers.get('authorization')
+    const expectedAuth = process.env.AUTH_PASSWORD
+
+    // For development and when AUTH_PASSWORD is not set, skip auth
+    if (expectedAuth && (!authHeader || authHeader !== `Bearer ${expectedAuth}`)) {
+      console.log('Unauthorized chat API access attempt')
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized access' }),
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
+      )
+    }
+
     // Check if API key is properly configured at runtime
     if (!process.env.MOONSHOT_API_KEY) {
       console.error('MOONSHOT_API_KEY is not configured')
