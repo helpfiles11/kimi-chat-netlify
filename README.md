@@ -5,6 +5,7 @@ A modern, real-time AI chat application built with Next.js 15 and integrated wit
 ## Features
 
 - **Real-time Streaming**: AI responses appear word-by-word as they are generated
+- **Dynamic Model Selection**: Choose from 5 Kimi AI models with intelligent auto-selection default
 - **Modern UI**: Clean, responsive interface built with Tailwind CSS (full-width layout)
 - **Password Protection**: Simple authentication system protects your API usage
 - **Serverless Architecture**: API routes deployed as serverless functions
@@ -80,6 +81,20 @@ npm run dev
 - `npm run build` - Build for production
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
+
+## AI Models
+
+The chat interface includes a dynamic model selector with the following Kimi AI models:
+
+| Model ID | Name | Description | Use Case |
+|----------|------|-------------|----------|
+| `moonshot-v1-auto` | **Moonshot V1 (Auto)** ⭐ | Automatically selects the most appropriate model for your task | **Default** - Best for general use |
+| `kimi-k2-0711-preview` | Kimi K2 (Preview) | Latest Kimi model with enhanced capabilities | Advanced conversations |
+| `moonshot-v1-8k` | Moonshot V1 (8K) | Standard model with 8K context length | Short to medium conversations |
+| `moonshot-v1-32k` | Moonshot V1 (32K) | Extended context model with 32K token support | Long conversations |
+| `moonshot-v1-128k` | Moonshot V1 (128K) | Large context model with 128K token support | Very long documents/conversations |
+
+**⭐ Recommended**: The `moonshot-v1-auto` model is set as default and intelligently chooses the best underlying model for each task.
 
 ## Deployment
 
