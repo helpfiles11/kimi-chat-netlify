@@ -16,15 +16,25 @@ A modern, real-time AI chat application built with Next.js 15 and integrated wit
 
 ## Features
 
-- **Real-time Streaming**: AI responses appear word-by-word as they are generated
-- **Advanced Model Selection**: Choose from latest Kimi K2 models with 1T parameters and 256K context
-- **Copy Functionality**: One-click copy of AI responses with visual feedback
-- **Context System**: Provide additional context, documents, or instructions to enhance AI responses
-- **Modern UI**: Clean, responsive interface built with Tailwind CSS with dark mode support
-- **Password Protection**: Simple authentication system protects your API usage
-- **Serverless Architecture**: API routes deployed as serverless functions
-- **Type Safety**: Full TypeScript implementation
-- **Production Ready**: Optimized for performance and scalability
+### 🤖 **Advanced AI Capabilities**
+- **Tool Calling System**: AI can execute code, solve math problems, and analyze data
+- **Real-time Streaming**: Word-by-word response generation
+- **12 Official Models**: Including latest Kimi K2 family with 1T parameters 🎉
+
+### 💰 **Cost Transparency**
+- **Live Token Estimation**: See costs before sending requests
+- **Account Balance**: Real-time balance monitoring with auto-refresh
+- **Usage Analytics**: Track spending and optimize usage patterns
+
+### 📁 **File Processing**
+- **Smart Upload**: Local (1MB) or server-side (100MB) processing
+- **Multiple Formats**: Text, code, markdown, PDF, and more
+- **Drag & Drop**: Intuitive file handling interface
+
+### 🎨 **Professional UI**
+- **Modern Design**: Clean interface with dark mode
+- **Responsive**: Works perfectly on all devices
+- **Copy & Export**: Save conversations and responses
 
 ## Technology Stack
 
@@ -129,10 +139,10 @@ The Docker setup includes:
 
 | Model ID | Name | Badge | Description | Special Features |
 |----------|------|-------|-------------|------------------|
-| `kimi-latest` | **Kimi Latest** 🌟 | Latest | Always the newest and most advanced Kimi model | Auto-updates to latest |
-| `moonshot-v1-auto` | **Auto-Select** ⭐ | Smart | Automatically selects the best model for your task | Intelligent routing |
-| `kimi-k2-turbo-preview` | **Kimi K2 Turbo** ⚡ | Turbo | Fastest K2 model with optimized speed | Speed optimized |
-| `kimi-k2-0905-preview` | **Kimi K2 (Sept 2024)** 🚀 | Enhanced | September 2024 K2 with enhanced performance | Latest K2 features |
+| `kimi-latest` | **Kimi Latest** 🌟🎉 | Latest | Always the newest and most advanced Kimi model | Auto-updates to latest |
+| `moonshot-v1-auto` | **Auto-Select (Moonshot only)** ⭐ | Smart | Selects best Moonshot model - cannot exceed K2 family | Intelligent routing |
+| `kimi-k2-turbo-preview` | **Kimi K2 Turbo** ⚡🎉 | Turbo | Fastest K2 model with optimized speed | Speed optimized |
+| `kimi-k2-0905-preview` | **Kimi K2 (Sept 2024)** 🚀🎉 | Enhanced | September 2024 K2 with enhanced performance | Latest K2 features |
 | `kimi-thinking-preview` | **Kimi Thinking** 🤔 | Reasoning | Advanced reasoning with step-by-step thinking | Chain-of-thought |
 | `moonshot-v1-128k` | **Moonshot V1 (128K)** 📚 | Large Context | 128K token context for long documents | Extended context |
 | `moonshot-v1-32k-vision-preview` | **Vision (32K)** 👁️ | Vision | Image understanding + 32K context | Multimodal |
