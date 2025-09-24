@@ -37,6 +37,9 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
+# Allow example env file
+!.env.local.example
+
 # vercel
 .vercel
 
