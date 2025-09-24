@@ -14,8 +14,6 @@ A modern, real-time AI chat application built with Next.js 15 and integrated wit
 ![Features Overview](screenshots/features-overview.png)
 *Model selection, context input, and conversation management tools*
 
-> **Note**: To add your screenshots, place them in the `/screenshots/` directory and name them `chat-interface.png` and `features-overview.png`
-
 ## Features
 
 - **Real-time Streaming**: AI responses appear word-by-word as they are generated
