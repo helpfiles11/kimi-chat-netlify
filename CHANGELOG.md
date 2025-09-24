@@ -3,6 +3,16 @@
 ## [Unreleased] - 2024-12-XX
 
 ### Added
+- **Copy Functionality**: One-click copy of AI responses with visual feedback
+  - Native clipboard API implementation (no external dependencies)
+  - Hover-to-reveal copy button on AI messages
+  - Visual feedback with checkmark and "Copied!" text
+  - Fallback support for older browsers
+  - Only 0.8kB bundle size increase
+
+## [Previous] - 2024-12-XX
+
+### Added
 - **Dark Mode Support**: Complete dark mode implementation across all UI components
   - Dark theme for chat interface, authentication forms, and all interactive elements
   - Smooth color transitions with `transition-colors duration-200`

@@ -2,6 +2,7 @@
 import React, { useState } from 'react'
 // In AI SDK v3, useChat is available from 'ai/react'
 import { useChat } from 'ai/react'
+import CopyButton from '../components/CopyButton'
 
 /**
  * Main Chat Component
@@ -128,10 +129,19 @@ export default function Chat() {
           </div>
         )}
         {messages.map(m => (
-          <div key={m.id} className={`mb-4 p-3 rounded-lg transition-colors duration-200 ${m.role === 'user' ? 'bg-blue-100 dark:bg-blue-900/30 ml-8' : 'bg-white dark:bg-gray-700 mr-8'}`}>
-            {/* Show who is speaking (user or assistant) */}
-            <div className="font-semibold text-sm text-gray-600 dark:text-gray-400 mb-1">
-              {m.role === 'user' ? 'You' : 'Kimi AI'}
+          <div key={m.id} className={`group mb-4 p-3 rounded-lg transition-colors duration-200 ${m.role === 'user' ? 'bg-blue-100 dark:bg-blue-900/30 ml-8' : 'bg-white dark:bg-gray-700 mr-8'}`}>
+            {/* Header with speaker name and copy button */}
+            <div className="flex items-center justify-between mb-1">
+              <div className="font-semibold text-sm text-gray-600 dark:text-gray-400">
+                {m.role === 'user' ? 'You' : 'Kimi AI'}
+              </div>
+              {/* Copy button only for AI messages */}
+              {m.role === 'assistant' && (
+                <CopyButton
+                  text={m.content}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                />
+              )}
             </div>
             {/* Show the message content, preserving line breaks with whitespace-pre-wrap */}
             <div className="whitespace-pre-wrap text-gray-800 dark:text-gray-200 leading-relaxed">{m.content}</div>

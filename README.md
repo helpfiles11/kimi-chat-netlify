@@ -8,7 +8,8 @@ A modern, real-time AI chat application built with Next.js 15 and integrated wit
 
 - **Real-time Streaming**: AI responses appear word-by-word as they are generated
 - **Dynamic Model Selection**: Choose from 5 Kimi AI models with intelligent auto-selection default
-- **Modern UI**: Clean, responsive interface built with Tailwind CSS (full-width layout)
+- **Copy Functionality**: One-click copy of AI responses with visual feedback
+- **Modern UI**: Clean, responsive interface built with Tailwind CSS with dark mode support
 - **Password Protection**: Simple authentication system protects your API usage
 - **Serverless Architecture**: API routes deployed as serverless functions
 - **Type Safety**: Full TypeScript implementation
