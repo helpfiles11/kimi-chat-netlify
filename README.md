@@ -1,36 +1,168 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Kimi Chat Application
+
+A modern, real-time AI chat application built with Next.js 15 and integrated with Kimi AI (Moonshot AI). Features streaming responses, responsive design, and seamless deployment on Netlify.
+
+## Features
+
+- **Real-time Streaming**: AI responses appear word-by-word as they are generated
+- **Modern UI**: Clean, responsive interface built with Tailwind CSS
+- **Serverless Architecture**: API routes deployed as serverless functions
+- **Type Safety**: Full TypeScript implementation
+- **Production Ready**: Optimized for performance and scalability
+
+## Technology Stack
+
+- **Frontend**: Next.js 15, React 19, TypeScript
+- **Styling**: Tailwind CSS v4
+- **AI Integration**: Kimi AI via OpenAI-compatible API
+- **Streaming**: Vercel AI SDK v3
+- **Deployment**: Netlify with serverless functions
+- **Development**: ESLint, TypeScript strict mode
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── layout.tsx          # Root layout with global styles
+│   ├── page.tsx            # Main chat interface
+│   ├── globals.css         # Global Tailwind styles
+│   └── api/
+│       └── chat/
+│           └── route.ts    # Chat API endpoint
+├── netlify.toml            # Netlify deployment configuration
+└── package.json           # Dependencies and scripts
+```
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+- Node.js 18 or higher
+- npm or yarn
+- Kimi AI API key from [Moonshot AI Platform](https://platform.moonshot.cn/)
+
+### Installation
+
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/helpfiles11/kimichatapp.git
+cd kimichatapp
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Set up environment variables:
+```bash
+cp .env.local.example .env.local
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Add your Kimi API key to `.env.local`:
+```
+MOONSHOT_API_KEY=your_kimi_api_key_here
+```
 
-## Learn More
+4. Start the development server:
+```bash
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Available Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
 
-## Deploy on Vercel
+## Deployment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Netlify (Recommended)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Connect your GitHub repository to Netlify
+2. Set the build command: `npm run build`
+3. Set the publish directory: `.next`
+4. Add environment variable `MOONSHOT_API_KEY` in Netlify dashboard
+5. Deploy automatically on every commit
+
+### Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `MOONSHOT_API_KEY` | Your Kimi AI API key | Yes |
+
+## Architecture Overview
+
+### Frontend
+- **Component Structure**: React functional components with hooks
+- **State Management**: Built-in `useChat` hook manages conversation state
+- **Real-time Updates**: Streaming responses update UI incrementally
+- **Responsive Design**: Mobile-first approach with Tailwind CSS
+
+### Backend
+- **API Routes**: Next.js API routes handle chat requests
+- **Streaming**: Server-sent events for real-time response delivery
+- **Security**: API keys stored securely in environment variables
+- **Error Handling**: Comprehensive error handling and logging
+
+### Data Flow
+1. User submits message through React form
+2. Frontend sends POST request to `/api/chat`
+3. API route forwards request to Kimi AI
+4. Streaming response flows back to frontend
+5. UI updates in real-time as response generates
+
+## Security Considerations
+
+- API keys stored in environment variables only
+- No sensitive data exposed to client-side code
+- Comprehensive `.gitignore` prevents credential leaks
+- Input validation on both frontend and backend
+- CORS handling through Next.js API routes
+
+## Performance Optimizations
+
+- Next.js App Router for optimal performance
+- Static asset optimization
+- Streaming reduces perceived latency
+- Efficient re-rendering with React hooks
+- Production build optimization
+
+## Browser Compatibility
+
+- Chrome 90+
+- Firefox 88+
+- Safari 14+
+- Edge 90+
+
+Requires modern browser with support for:
+- ES2017 features
+- Fetch API
+- Server-sent events
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -m 'Add amazing feature'`
+4. Push to the branch: `git push origin feature/amazing-feature`
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Contact
+
+For questions or support, please open an issue on GitHub.
+
+## Acknowledgments
+
+- [Kimi AI](https://kimi.moonshot.cn/) for providing the AI capabilities
+- [Vercel AI SDK](https://sdk.vercel.ai/) for streaming functionality
+- [Next.js](https://nextjs.org/) for the React framework
+- [Tailwind CSS](https://tailwindcss.com/) for styling utilities

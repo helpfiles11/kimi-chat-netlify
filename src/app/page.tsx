@@ -1,103 +1,66 @@
-import Image from "next/image";
+'use client'
+// In AI SDK v3, useChat is available from 'ai/react'
+import { useChat } from 'ai/react'
 
-export default function Home() {
+/**
+ * Main Chat Component
+ *
+ * This is the heart of our chat application. It renders a simple chat interface
+ * that connects to the Kimi AI API through our backend API route.
+ *
+ * How it works:
+ * 1. Uses the 'useChat' hook from Vercel's AI SDK to manage chat state
+ * 2. The hook automatically handles message history, streaming responses, and form submission
+ * 3. When user submits a message, it sends a POST request to '/api/chat' (our backend route)
+ * 4. The backend streams the AI response back, which is automatically handled by useChat
+ * 5. The UI updates in real-time as the AI types its response
+ */
+export default function Chat() {
+  // useChat is a powerful hook that manages all chat logic for us:
+  // - messages: Array of all chat messages (user and AI)
+  // - input: Current text in the input field
+  // - handleInputChange: Function to update the input field
+  // - handleSubmit: Function that sends the message to our API when form is submitted
+  const { messages, input, handleInputChange, handleSubmit } = useChat({
+    api: '/api/chat' // This points to our backend API route at src/app/api/chat/route.ts
+  })
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <main className="mx-auto max-w-2xl p-6">
+      {/* App title */}
+      <h1 className="text-2xl font-bold mb-4">Kimi on Netlify</h1>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+      {/* Chat messages container */}
+      <div className="border rounded p-4 h-96 overflow-y-auto mb-4 bg-gray-50">
+        {/*
+          Render all messages in the conversation.
+          Each message has:
+          - id: unique identifier
+          - role: 'user' or 'assistant'
+          - content: the actual text content
+        */}
+        {messages.map(m => (
+          <div key={m.id} className="mb-2">
+            {/* Show who is speaking (user or assistant) */}
+            <span className="font-semibold">{m.role}:</span>
+            {/* Show the message content, preserving line breaks with whitespace-pre-wrap */}
+            <span className="ml-2 whitespace-pre-wrap">{m.content}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Chat input form */}
+      <form onSubmit={handleSubmit} className="flex gap-2">
+        {/* Text input for typing messages */}
+        <input
+          value={input} // Controlled by useChat hook
+          onChange={handleInputChange} // Updates input state in useChat hook
+          placeholder="Ask Kimi…"
+          className="flex-1 border rounded px-3 py-2"
+        />
+        {/* Submit button - when clicked, handleSubmit sends the message to our API */}
+        <button className="px-4 py-2 bg-blue-600 text-white rounded">Send</button>
+      </form>
+    </main>
+  )
 }
