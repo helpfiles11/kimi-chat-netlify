@@ -30,9 +30,6 @@ export default function Chat() {
     error
   } = useChat({
     api: '/api/chat', // This points to our backend API route at src/app/api/chat/route.ts
-    headers: {
-      'Authorization': `Bearer ${process.env.NEXT_PUBLIC_AUTH_TOKEN || 'development'}`
-    },
     onError: (error) => {
       console.error('Chat error:', error)
     },
