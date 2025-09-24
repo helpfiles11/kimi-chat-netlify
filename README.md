@@ -127,14 +127,13 @@ The Docker setup includes:
 
 The chat interface includes the latest Kimi AI models with enhanced capabilities:
 
-| Model ID | Name | Badge | Description | Context | Parameters |
-|----------|------|-------|-------------|---------|------------|
-| `moonshot-v1-auto` | **Auto-Select** ⭐ | Smart | Automatically selects the best model for your task | Adaptive | Variable |
-| `kimi-k2-instruct` | **Kimi K2 Instruct** 🚀 | Latest | State-of-the-art model with tool calling capabilities | 256K | 1T total, 32B active |
-| `kimi-k2-0905` | **Kimi K2 (0905)** ⚡ | Enhanced | Improved performance, tool use, and coding | 256K | 1T total, 32B active |
-| `kimi-k2-base` | **Kimi K2 Base** 🔬 | Research | Foundation model for fine-tuning and research | 256K | 1T total, 32B active |
-| `moonshot-v1-128k` | Moonshot V1 (128K) | Legacy | Legacy model with large context support | 128K | - |
-| `moonshot-v1-32k` | Moonshot V1 (32K) | Legacy | Legacy model with extended context | 32K | - |
+| Model ID | Name | Badge | Description | Context | Performance |
+|----------|------|-------|-------------|---------|-------------|
+| `moonshot-v1-auto` | **Auto-Select** ⭐ | Smart | Automatically selects the best model for your task | Adaptive | Optimized |
+| `moonshot-v1-128k` | **Moonshot V1 (128K)** 📚 | Large Context | Large context model, best for long documents | 128K | Comprehensive |
+| `moonshot-v1-32k` | **Moonshot V1 (32K)** 📄 | Extended | Extended context model for longer conversations | 32K | Balanced |
+| `moonshot-v1-8k` | **Moonshot V1 (8K)** ⚡ | Fast | Standard model optimized for speed | 8K | Fast Response |
+| `kimi-k2-0711-preview` | **Kimi K2 Preview** 🚀 | Preview | Latest Kimi K2 preview with enhanced capabilities | Large | Advanced |
 
 ### Kimi K2 Capabilities
 - **Mixture-of-Experts Architecture**: 1 trillion parameters with 32 billion activated
@@ -143,7 +142,7 @@ The chat interface includes the latest Kimi AI models with enhanced capabilities
 - **Coding Excellence**: State-of-the-art performance in coding benchmarks
 - **Frontier Knowledge**: Superior performance in math, reasoning, and complex tasks
 
-**⭐ Recommended**: Use `kimi-k2-instruct` for the best overall performance and latest features.
+**⭐ Recommended**: Use `moonshot-v1-auto` for intelligent model selection, or `kimi-k2-0711-preview` for the latest K2 capabilities.
 
 ## Deployment
 

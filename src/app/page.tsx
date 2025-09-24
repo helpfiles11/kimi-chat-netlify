@@ -17,7 +17,7 @@ import CopyButton from '../components/CopyButton'
  * 4. The backend streams the AI response back, which is automatically handled by useChat
  * 5. The UI updates in real-time as the AI types its response
  */
-// Available Kimi AI models with latest capabilities (2024)
+// Available Kimi AI models - using verified API model IDs (2024)
 const KIMI_MODELS = [
   {
     id: 'moonshot-v1-auto',
@@ -26,47 +26,42 @@ const KIMI_MODELS = [
     badge: 'Smart'
   },
   {
-    id: 'kimi-k2-instruct',
-    name: 'Kimi K2 Instruct',
-    description: '1T params, 256K context, tool calling, best for chat & coding',
-    badge: 'Latest'
-  },
-  {
-    id: 'kimi-k2-base',
-    name: 'Kimi K2 Base',
-    description: 'Foundation model for custom fine-tuning and research',
-    badge: 'Research'
-  },
-  {
-    id: 'kimi-k2-0905',
-    name: 'Kimi K2 (0905)',
-    description: 'Enhanced performance, improved tool use and coding',
-    badge: 'Enhanced'
-  },
-  {
     id: 'moonshot-v1-128k',
     name: 'Moonshot V1 (128K)',
-    description: 'Legacy model with 128K context support',
-    badge: 'Legacy'
+    description: 'Large context model with 128K token support, best for long documents',
+    badge: 'Large Context'
   },
   {
     id: 'moonshot-v1-32k',
     name: 'Moonshot V1 (32K)',
-    description: 'Legacy model with 32K context support',
-    badge: 'Legacy'
+    description: 'Extended context model with 32K token support',
+    badge: 'Extended'
+  },
+  {
+    id: 'moonshot-v1-8k',
+    name: 'Moonshot V1 (8K)',
+    description: 'Standard model with 8K context, optimized for speed',
+    badge: 'Fast'
+  },
+  {
+    id: 'kimi-k2-0711-preview',
+    name: 'Kimi K2 Preview',
+    description: 'Latest Kimi K2 preview model with enhanced capabilities',
+    badge: 'Preview'
   }
 ]
 
 // Utility function to get badge styling
 const getBadgeStyles = (badge: string) => {
   const styles = {
-    Latest: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
-    Enhanced: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
     Smart: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
-    Research: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
-    Legacy: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+    'Large Context': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+    Extended: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
+    Fast: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
+    Preview: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
+    Latest: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
   } as const
-  return styles[badge as keyof typeof styles] || styles.Legacy
+  return styles[badge as keyof typeof styles] || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
 }
 
 export default function Chat() {
