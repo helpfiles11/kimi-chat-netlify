@@ -17,8 +17,14 @@ import CopyButton from '../components/CopyButton'
  * 4. The backend streams the AI response back, which is automatically handled by useChat
  * 5. The UI updates in real-time as the AI types its response
  */
-// Available Kimi AI models - using verified API model IDs (2024)
+// Available Kimi AI models - OFFICIAL from Moonshot API /v1/models (2024)
 const KIMI_MODELS = [
+  {
+    id: 'kimi-latest',
+    name: 'Kimi Latest',
+    description: 'Always the newest and most advanced Kimi model available',
+    badge: 'Latest'
+  },
   {
     id: 'moonshot-v1-auto',
     name: 'Auto-Select',
@@ -26,10 +32,34 @@ const KIMI_MODELS = [
     badge: 'Smart'
   },
   {
+    id: 'kimi-k2-turbo-preview',
+    name: 'Kimi K2 Turbo',
+    description: 'Fastest K2 model with optimized speed and efficiency',
+    badge: 'Turbo'
+  },
+  {
+    id: 'kimi-k2-0905-preview',
+    name: 'Kimi K2 (0905)',
+    description: 'September 2024 K2 model with enhanced performance',
+    badge: 'Enhanced'
+  },
+  {
+    id: 'kimi-thinking-preview',
+    name: 'Kimi Thinking',
+    description: 'Advanced reasoning model with step-by-step thinking',
+    badge: 'Reasoning'
+  },
+  {
     id: 'moonshot-v1-128k',
     name: 'Moonshot V1 (128K)',
-    description: 'Large context model with 128K token support, best for long documents',
+    description: 'Large context model with 128K token support',
     badge: 'Large Context'
+  },
+  {
+    id: 'moonshot-v1-32k-vision-preview',
+    name: 'Moonshot V1 Vision (32K)',
+    description: 'Vision model with image understanding and 32K context',
+    badge: 'Vision'
   },
   {
     id: 'moonshot-v1-32k',
@@ -40,26 +70,23 @@ const KIMI_MODELS = [
   {
     id: 'moonshot-v1-8k',
     name: 'Moonshot V1 (8K)',
-    description: 'Standard model with 8K context, optimized for speed',
+    description: 'Fast model with 8K context, optimized for speed',
     badge: 'Fast'
-  },
-  {
-    id: 'kimi-k2-0711-preview',
-    name: 'Kimi K2 Preview',
-    description: 'Latest Kimi K2 preview model with enhanced capabilities',
-    badge: 'Preview'
   }
 ]
 
 // Utility function to get badge styling
 const getBadgeStyles = (badge: string) => {
   const styles = {
+    Latest: 'bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-800 dark:from-emerald-900/30 dark:to-green-900/30 dark:text-emerald-300 font-bold',
     Smart: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
-    'Large Context': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+    Turbo: 'bg-gradient-to-r from-red-100 to-orange-100 text-red-700 dark:from-red-900/30 dark:to-orange-900/30 dark:text-red-300',
+    Enhanced: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+    Reasoning: 'bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-700 dark:from-indigo-900/30 dark:to-purple-900/30 dark:text-indigo-300',
+    'Large Context': 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300',
+    Vision: 'bg-gradient-to-r from-pink-100 to-rose-100 text-pink-700 dark:from-pink-900/30 dark:to-rose-900/30 dark:text-pink-300',
     Extended: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
-    Fast: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
-    Preview: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
-    Latest: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+    Fast: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
   } as const
   return styles[badge as keyof typeof styles] || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
 }

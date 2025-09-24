@@ -59,13 +59,21 @@ export async function POST(req: Request) {
       )
     }
 
-    // Security: Validate model is in allowed list - using verified API model IDs
+    // Security: Validate model is in allowed list - OFFICIAL from Moonshot API /v1/models
     const allowedModels = [
+      'kimi-latest',
       'moonshot-v1-auto',
+      'kimi-k2-turbo-preview',
+      'kimi-k2-0905-preview',
+      'kimi-thinking-preview',
       'moonshot-v1-128k',
+      'moonshot-v1-32k-vision-preview',
       'moonshot-v1-32k',
       'moonshot-v1-8k',
-      'kimi-k2-0711-preview'
+      // Additional models from API response but not in UI (for completeness)
+      'kimi-k2-0711-preview',
+      'moonshot-v1-8k-vision-preview',
+      'moonshot-v1-128k-vision-preview'
     ]
     const selectedModel = allowedModels.includes(model) ? model : 'moonshot-v1-auto'
 

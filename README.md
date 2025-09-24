@@ -123,17 +123,26 @@ The Docker setup includes:
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
 
-## AI Models (2024 Updates)
+## AI Models (Official from Moonshot API)
 
-The chat interface includes the latest Kimi AI models with enhanced capabilities:
+**12 Official Models Available** - Directly sourced from `https://api.moonshot.ai/v1/models`:
 
-| Model ID | Name | Badge | Description | Context | Performance |
-|----------|------|-------|-------------|---------|-------------|
-| `moonshot-v1-auto` | **Auto-Select** ⭐ | Smart | Automatically selects the best model for your task | Adaptive | Optimized |
-| `moonshot-v1-128k` | **Moonshot V1 (128K)** 📚 | Large Context | Large context model, best for long documents | 128K | Comprehensive |
-| `moonshot-v1-32k` | **Moonshot V1 (32K)** 📄 | Extended | Extended context model for longer conversations | 32K | Balanced |
-| `moonshot-v1-8k` | **Moonshot V1 (8K)** ⚡ | Fast | Standard model optimized for speed | 8K | Fast Response |
-| `kimi-k2-0711-preview` | **Kimi K2 Preview** 🚀 | Preview | Latest Kimi K2 preview with enhanced capabilities | Large | Advanced |
+| Model ID | Name | Badge | Description | Special Features |
+|----------|------|-------|-------------|------------------|
+| `kimi-latest` | **Kimi Latest** 🌟 | Latest | Always the newest and most advanced Kimi model | Auto-updates to latest |
+| `moonshot-v1-auto` | **Auto-Select** ⭐ | Smart | Automatically selects the best model for your task | Intelligent routing |
+| `kimi-k2-turbo-preview` | **Kimi K2 Turbo** ⚡ | Turbo | Fastest K2 model with optimized speed | Speed optimized |
+| `kimi-k2-0905-preview` | **Kimi K2 (Sept 2024)** 🚀 | Enhanced | September 2024 K2 with enhanced performance | Latest K2 features |
+| `kimi-thinking-preview` | **Kimi Thinking** 🤔 | Reasoning | Advanced reasoning with step-by-step thinking | Chain-of-thought |
+| `moonshot-v1-128k` | **Moonshot V1 (128K)** 📚 | Large Context | 128K token context for long documents | Extended context |
+| `moonshot-v1-32k-vision-preview` | **Vision (32K)** 👁️ | Vision | Image understanding + 32K context | Multimodal |
+| `moonshot-v1-32k` | **Moonshot V1 (32K)** 📄 | Extended | 32K token context for conversations | Balanced |
+| `moonshot-v1-8k` | **Moonshot V1 (8K)** ⚡ | Fast | 8K context optimized for speed | Fast response |
+
+### 🎯 Additional Models Available via API
+- `kimi-k2-0711-preview` - July 2024 K2 preview
+- `moonshot-v1-8k-vision-preview` - 8K vision model
+- `moonshot-v1-128k-vision-preview` - 128K vision model
 
 ### Kimi K2 Capabilities
 - **Mixture-of-Experts Architecture**: 1 trillion parameters with 32 billion activated
@@ -142,7 +151,11 @@ The chat interface includes the latest Kimi AI models with enhanced capabilities
 - **Coding Excellence**: State-of-the-art performance in coding benchmarks
 - **Frontier Knowledge**: Superior performance in math, reasoning, and complex tasks
 
-**⭐ Recommended**: Use `moonshot-v1-auto` for intelligent model selection, or `kimi-k2-0711-preview` for the latest K2 capabilities.
+**⭐ Recommended**:
+- `kimi-latest` - Always gets the newest model automatically
+- `moonshot-v1-auto` - Intelligent model selection for your task
+- `kimi-k2-turbo-preview` - Fastest performance
+- `kimi-thinking-preview` - Complex reasoning tasks
 
 ## Deployment
 
