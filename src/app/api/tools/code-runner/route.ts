@@ -141,14 +141,16 @@ async function executeJavaScript(code: string): Promise<CodeRunnerResponse> {
     return {
       success: true,
       result,
-      output: safeConsole.join('\\n')
+      output: safeConsole.join('\\n'),
+      language: 'javascript'
     }
 
   } catch (error) {
     return {
       success: false,
       error: error instanceof Error ? error.message : 'JavaScript execution failed',
-      output: ''
+      output: '',
+      language: 'javascript'
     }
   }
 }
@@ -183,7 +185,8 @@ async function executePython(code: string): Promise<CodeRunnerResponse> {
       return {
         success: true,
         result: undefined,
-        output: outputs.join('\\n')
+        output: outputs.join('\\n'),
+        language: 'python'
       }
     }
 
@@ -191,14 +194,16 @@ async function executePython(code: string): Promise<CodeRunnerResponse> {
     return {
       success: false,
       error: 'Python execution not fully implemented. This demo supports basic print() statements and math expressions. For full Python support, a containerized environment would be needed.',
-      output: 'Note: This is a demonstration. Real Python execution would require a secure sandboxed environment.'
+      output: 'Note: This is a demonstration. Real Python execution would require a secure sandboxed environment.',
+      language: 'python'
     }
 
   } catch (error) {
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Python execution failed',
-      output: ''
+      output: '',
+      language: 'python'
     }
   }
 }

@@ -156,64 +156,6 @@ export default function Chat() {
     }
   }
 
-  // Token estimation function
-  const estimateTokens = useCallback(async (newMessage: string) => {
-    if (!newMessage.trim()) {
-      setTokenEstimate(null)
-      return
-    }
-
-    setEstimatingTokens(true)
-    setTokenEstimate(null)
-
-    try {
-      // Prepare messages for estimation (same as chat API)
-      const contextualMessages = [...messages]
-
-      // Add context if provided
-      if (context && context.trim()) {
-        const systemMessage = {
-          role: 'system' as const,
-          content: `Additional context: ${context.trim()}`
-        }
-        const existingSystemIndex = contextualMessages.findIndex(msg => msg.role === 'system')
-        if (existingSystemIndex >= 0) {
-          contextualMessages[existingSystemIndex].content += `\n\n${systemMessage.content}`
-        } else {
-          contextualMessages.unshift(systemMessage)
-        }
-      }
-
-      // Add the new user message
-      contextualMessages.push({
-        role: 'user' as const,
-        content: newMessage.trim()
-      })
-
-      const response = await fetch('/api/estimate-tokens', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: selectedModel,
-          messages: contextualMessages
-        })
-      })
-
-      if (response.ok) {
-        const result = await response.json()
-        if (result.success) {
-          setTokenEstimate(result.data)
-          // Store in localStorage for UsageInfo component
-          localStorage.setItem('lastTokenEstimate', JSON.stringify(result.data))
-        }
-      }
-    } catch (error) {
-      console.error('Token estimation failed:', error)
-    } finally {
-      setEstimatingTokens(false)
-    }
-  }, [messages, context, selectedModel])
-
   // useChat is a powerful hook that manages all chat logic for us:
   // - messages: Array of all chat messages (user and AI)
   // - input: Current text in the input field
@@ -245,6 +187,66 @@ export default function Chat() {
       }
     }
   })
+
+  // Token estimation function
+  const estimateTokens = useCallback(async (newMessage: string) => {
+    if (!newMessage.trim()) {
+      setTokenEstimate(null)
+      return
+    }
+
+    setEstimatingTokens(true)
+    setTokenEstimate(null)
+
+    try {
+      // Prepare messages for estimation (same as chat API)
+      const contextualMessages = [...messages]
+
+      // Add context if provided
+      if (context && context.trim()) {
+        const systemMessage = {
+          id: `system-${Date.now()}`,
+          role: 'system' as const,
+          content: `Additional context: ${context.trim()}`
+        }
+        const existingSystemIndex = contextualMessages.findIndex(msg => msg.role === 'system')
+        if (existingSystemIndex >= 0) {
+          contextualMessages[existingSystemIndex].content += `\n\n${systemMessage.content}`
+        } else {
+          contextualMessages.unshift(systemMessage)
+        }
+      }
+
+      // Add the new user message
+      contextualMessages.push({
+        id: `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        role: 'user' as const,
+        content: newMessage.trim()
+      })
+
+      const response = await fetch('/api/estimate-tokens', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: selectedModel,
+          messages: contextualMessages
+        })
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        if (result.success) {
+          setTokenEstimate(result.data)
+          // Store in localStorage for UsageInfo component
+          localStorage.setItem('lastTokenEstimate', JSON.stringify(result.data))
+        }
+      }
+    } catch (error) {
+      console.error('Token estimation failed:', error)
+    } finally {
+      setEstimatingTokens(false)
+    }
+  }, [messages, context, selectedModel])
 
   // Debounced token estimation when input changes
   useEffect(() => {
