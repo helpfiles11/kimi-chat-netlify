@@ -141,11 +141,109 @@ export async function POST(req: Request) {
       console.log('Context provided:', context.slice(0, 100) + (context.length > 100 ? '...' : ''))
     }
 
-    // Call the Kimi API to get a chat completion
+    // Define available tools for AI to use
+    const tools = [
+      {
+        type: "function" as const,
+        function: {
+          name: "CodeRunner",
+          description: "Execute Python or JavaScript code safely. Useful for calculations, data analysis, algorithms, and programming tasks.",
+          parameters: {
+            type: "object",
+            properties: {
+              language: {
+                type: "string",
+                enum: ["python", "javascript"],
+                description: "Programming language to execute"
+              },
+              code: {
+                type: "string",
+                description: "The code to execute"
+              }
+            },
+            required: ["language", "code"]
+          }
+        }
+      },
+      {
+        type: "function" as const,
+        function: {
+          name: "Calculator",
+          description: "Perform mathematical calculations including arithmetic, algebra, trigonometry, and statistical operations.",
+          parameters: {
+            type: "object",
+            properties: {
+              expression: {
+                type: "string",
+                description: "Mathematical expression to evaluate (e.g., '2 + 2', 'sqrt(16)', 'sin(pi/2)')"
+              },
+              operation: {
+                type: "string",
+                enum: ["evaluate", "solve", "simplify", "derivative", "integral"],
+                description: "Type of mathematical operation to perform"
+              }
+            },
+            required: ["expression", "operation"]
+          }
+        }
+      },
+      {
+        type: "function" as const,
+        function: {
+          name: "TextAnalyzer",
+          description: "Analyze text for sentiment, keywords, readability, word count, and other linguistic metrics.",
+          parameters: {
+            type: "object",
+            properties: {
+              text: {
+                type: "string",
+                description: "Text to analyze"
+              },
+              analysis_type: {
+                type: "string",
+                enum: ["sentiment", "keywords", "readability", "statistics", "language_detection"],
+                description: "Type of text analysis to perform"
+              }
+            },
+            required: ["text", "analysis_type"]
+          }
+        }
+      },
+      {
+        type: "function" as const,
+        function: {
+          name: "DataProcessor",
+          description: "Process and analyze structured data like CSV, JSON, or tabular data with filtering, sorting, and statistical analysis.",
+          parameters: {
+            type: "object",
+            properties: {
+              data: {
+                type: "string",
+                description: "Data to process (CSV, JSON, or structured text)"
+              },
+              operation: {
+                type: "string",
+                enum: ["parse", "filter", "sort", "aggregate", "statistics", "visualize"],
+                description: "Data processing operation to perform"
+              },
+              parameters: {
+                type: "object",
+                description: "Additional parameters for the operation (filters, sort keys, etc.)"
+              }
+            },
+            required: ["data", "operation"]
+          }
+        }
+      }
+    ]
+
+    // Call the Kimi API to get a chat completion with tool support
     const response = await openai.chat.completions.create({
       model: selectedModel,               // Use the selected model from frontend
       stream: true,                       // Enable streaming for real-time responses
       messages: contextualMessages,       // Pass the conversation history with context to the AI
+      tools: tools,                       // Enable tool calling capabilities
+      temperature: 0.7                    // Balanced creativity for tool usage
     })
 
     console.log('Received response from Kimi API, creating stream')

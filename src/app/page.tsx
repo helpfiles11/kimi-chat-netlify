@@ -1,8 +1,10 @@
 'use client'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 // In AI SDK v3, useChat is available from 'ai/react'
 import { useChat } from 'ai/react'
 import CopyButton from '../components/CopyButton'
+import FileUpload from '../components/FileUpload'
+import UsageInfo from '../components/UsageInfo'
 
 /**
  * Main Chat Component
@@ -23,25 +25,28 @@ const KIMI_MODELS = [
     id: 'kimi-latest',
     name: 'Kimi Latest',
     description: 'Always the newest and most advanced Kimi model available',
-    badge: 'Latest'
+    badge: 'Latest',
+    promotion: true
   },
   {
     id: 'moonshot-v1-auto',
-    name: 'Auto-Select',
-    description: 'Automatically selects the best model for your task',
+    name: 'Auto-Select (Moonshot only)',
+    description: 'Automatically selects best Moonshot model - cannot exceed K2 family',
     badge: 'Smart'
   },
   {
     id: 'kimi-k2-turbo-preview',
     name: 'Kimi K2 Turbo',
     description: 'Fastest K2 model with optimized speed and efficiency',
-    badge: 'Turbo'
+    badge: 'Turbo',
+    promotion: true
   },
   {
     id: 'kimi-k2-0905-preview',
     name: 'Kimi K2 (0905)',
     description: 'September 2024 K2 model with enhanced performance',
-    badge: 'Enhanced'
+    badge: 'Enhanced',
+    promotion: true
   },
   {
     id: 'kimi-thinking-preview',
@@ -76,7 +81,7 @@ const KIMI_MODELS = [
 ]
 
 // Utility function to get badge styling
-const getBadgeStyles = (badge: string) => {
+const getBadgeStyles = (badge: string, isPromotion: boolean = false) => {
   const styles = {
     Latest: 'bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-800 dark:from-emerald-900/30 dark:to-green-900/30 dark:text-emerald-300 font-bold',
     Smart: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
@@ -88,7 +93,9 @@ const getBadgeStyles = (badge: string) => {
     Extended: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
     Fast: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
   } as const
-  return styles[badge as keyof typeof styles] || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+
+  const baseStyle = styles[badge as keyof typeof styles] || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+  return isPromotion ? `${baseStyle} ring-2 ring-yellow-400 ring-offset-1 dark:ring-yellow-500` : baseStyle
 }
 
 export default function Chat() {
@@ -97,6 +104,25 @@ export default function Chat() {
 
   // Context state - provides additional context/instructions to the AI
   const [context, setContext] = useState('')
+  const [uploadedFiles, setUploadedFiles] = useState<Array<{name: string, content: string}>>([])
+
+  // Token estimation state
+  const [tokenEstimate, setTokenEstimate] = useState<{total_tokens: number, estimated_cost?: number} | null>(null)
+  const [estimatingTokens, setEstimatingTokens] = useState(false)
+
+  // Handler for file upload
+  const handleFileUpload = (content: string, filename: string) => {
+    const fileInfo = { name: filename, content }
+    setUploadedFiles(prev => {
+      // Remove existing file with same name
+      const filtered = prev.filter(f => f.name !== filename)
+      return [...filtered, fileInfo]
+    })
+
+    // Add file content to context with clear labeling
+    const fileContext = `\n\n--- File: ${filename} ---\n${content}\n--- End of ${filename} ---`
+    setContext(prev => prev + fileContext)
+  }
 
   // Load context from localStorage on component mount
   useEffect(() => {
@@ -110,6 +136,7 @@ export default function Chat() {
   useEffect(() => {
     localStorage.setItem('kimi-chat-context', context)
   }, [context])
+
 
   // Utility functions for enhanced features
   const exportConversation = () => {
@@ -128,6 +155,64 @@ export default function Chat() {
       window.location.reload()
     }
   }
+
+  // Token estimation function
+  const estimateTokens = useCallback(async (newMessage: string) => {
+    if (!newMessage.trim()) {
+      setTokenEstimate(null)
+      return
+    }
+
+    setEstimatingTokens(true)
+    setTokenEstimate(null)
+
+    try {
+      // Prepare messages for estimation (same as chat API)
+      const contextualMessages = [...messages]
+
+      // Add context if provided
+      if (context && context.trim()) {
+        const systemMessage = {
+          role: 'system' as const,
+          content: `Additional context: ${context.trim()}`
+        }
+        const existingSystemIndex = contextualMessages.findIndex(msg => msg.role === 'system')
+        if (existingSystemIndex >= 0) {
+          contextualMessages[existingSystemIndex].content += `\n\n${systemMessage.content}`
+        } else {
+          contextualMessages.unshift(systemMessage)
+        }
+      }
+
+      // Add the new user message
+      contextualMessages.push({
+        role: 'user' as const,
+        content: newMessage.trim()
+      })
+
+      const response = await fetch('/api/estimate-tokens', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: selectedModel,
+          messages: contextualMessages
+        })
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        if (result.success) {
+          setTokenEstimate(result.data)
+          // Store in localStorage for UsageInfo component
+          localStorage.setItem('lastTokenEstimate', JSON.stringify(result.data))
+        }
+      }
+    } catch (error) {
+      console.error('Token estimation failed:', error)
+    } finally {
+      setEstimatingTokens(false)
+    }
+  }, [messages, context, selectedModel])
 
   // useChat is a powerful hook that manages all chat logic for us:
   // - messages: Array of all chat messages (user and AI)
@@ -160,6 +245,19 @@ export default function Chat() {
       }
     }
   })
+
+  // Debounced token estimation when input changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (input.trim()) {
+        estimateTokens(input)
+      } else {
+        setTokenEstimate(null)
+      }
+    }, 500) // Wait 500ms after user stops typing
+
+    return () => clearTimeout(timer)
+  }, [input, estimateTokens])
 
   return (
     <main className="mx-auto max-w-6xl p-6 min-h-screen transition-colors duration-200">
@@ -211,8 +309,8 @@ export default function Chat() {
               const selectedModelData = KIMI_MODELS.find(m => m.id === selectedModel)
               if (!selectedModelData) return null
               return (
-                <span className={`absolute right-10 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-xs rounded font-medium ${getBadgeStyles(selectedModelData.badge)}`}>
-                  {selectedModelData.badge}
+                <span className={`absolute right-10 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-xs rounded font-medium ${getBadgeStyles(selectedModelData.badge, selectedModelData.promotion)}`}>
+                  {selectedModelData.badge}{selectedModelData.promotion ? ' 🎉' : ''}
                 </span>
               )
             })()}
@@ -220,39 +318,83 @@ export default function Chat() {
         </div>
       </div>
 
+      {/* Usage and Balance Information */}
+      <UsageInfo className="mb-4" />
+
       {/* Context Input Section */}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
           <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Additional Context
           </label>
-          <span className={`text-xs transition-colors duration-200 ${
-            context.length > 9000 ? 'text-red-500 dark:text-red-400' :
-            context.length > 8000 ? 'text-orange-500 dark:text-orange-400' :
-            'text-gray-500 dark:text-gray-400'
-          }`}>
-            {context.length}/10,000 characters
-          </span>
+          <div className="flex items-center gap-3">
+            {uploadedFiles.length > 0 && (
+              <span className="text-xs text-blue-600 dark:text-blue-400">
+                {uploadedFiles.length} file{uploadedFiles.length !== 1 ? 's' : ''} uploaded
+              </span>
+            )}
+            <span className={`text-xs transition-colors duration-200 ${
+              context.length > 9000 ? 'text-red-500 dark:text-red-400' :
+              context.length > 8000 ? 'text-orange-500 dark:text-orange-400' :
+              'text-gray-500 dark:text-gray-400'
+            }`}>
+              {context.length}/10,000 characters
+            </span>
+          </div>
         </div>
+
+        {/* File Upload Area */}
+        <div className="mb-3">
+          <FileUpload
+            onFileContent={handleFileUpload}
+            disabled={isLoading}
+          />
+        </div>
+
+        {/* Context Textarea */}
         <textarea
           value={context}
           onChange={(e) => setContext(e.target.value.slice(0, 10000))}
-          placeholder="Provide additional context, documents, instructions, or background information for the AI..."
+          placeholder="Type additional context, or upload files above..."
           className="w-full h-24 border-2 border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none resize-none transition-colors duration-200"
           disabled={isLoading}
         />
-        {context && (
-          <div className="mt-1 flex items-center justify-between">
+
+        {/* Context Actions */}
+        {(context || uploadedFiles.length > 0) && (
+          <div className="mt-2 flex items-center justify-between">
             <span className="text-xs text-green-600 dark:text-green-400">
               ✓ Context will be included with your messages
             </span>
-            <button
-              onClick={() => setContext('')}
-              className="text-xs text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors duration-200"
-              disabled={isLoading}
-            >
-              Clear Context
-            </button>
+            <div className="flex gap-2">
+              {uploadedFiles.length > 0 && (
+                <button
+                  onClick={() => {
+                    setUploadedFiles([])
+                    // Remove file content from context (basic implementation)
+                    const contextLines = context.split('\n')
+                    const filteredLines = contextLines.filter(line =>
+                      !line.startsWith('--- File:') && !line.startsWith('--- End of')
+                    )
+                    setContext(filteredLines.join('\n').trim())
+                  }}
+                  className="text-xs text-gray-500 dark:text-gray-400 hover:text-orange-500 dark:hover:text-orange-400 transition-colors duration-200"
+                  disabled={isLoading}
+                >
+                  Clear Files
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  setContext('')
+                  setUploadedFiles([])
+                }}
+                className="text-xs text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors duration-200"
+                disabled={isLoading}
+              >
+                Clear All
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -304,6 +446,36 @@ export default function Chat() {
           </div>
         )}
       </div>
+
+      {/* Token estimation display */}
+      {(estimatingTokens || tokenEstimate) && (
+        <div className="mb-3 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+          <div className="flex items-center justify-between text-sm">
+            {estimatingTokens ? (
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 border border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-blue-700 dark:text-blue-300">Estimating tokens...</span>
+              </div>
+            ) : tokenEstimate ? (
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center space-x-4">
+                  <span className="text-blue-700 dark:text-blue-300">
+                    <strong>{tokenEstimate.total_tokens.toLocaleString()}</strong> tokens
+                  </span>
+                  {tokenEstimate.estimated_cost && (
+                    <span className="text-blue-600 dark:text-blue-400">
+                      ≈ <strong>${tokenEstimate.estimated_cost.toFixed(4)}</strong>
+                    </span>
+                  )}
+                </div>
+                <span className="text-xs text-blue-500 dark:text-blue-400">
+                  Estimated cost for this request
+                </span>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      )}
 
       {/* Chat input form */}
       <form onSubmit={handleSubmit} className="flex gap-3">
