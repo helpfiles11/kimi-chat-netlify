@@ -46,17 +46,65 @@ export async function POST(req: Request) {
       )
     }
 
-    // Extract the messages array, model, and context from the request body
-    // Format: {messages: [{role:'user', content:'hello'}], model: 'kimi-k2-0711-preview', context: 'additional info'}
-    const { messages, model, context } = await req.json()
+    // Extract and validate request body with size limits for security
+    const body = await req.json()
+    const { messages, model, context } = body
 
-    // Use the provided model or default to moonshot-v1-auto
-    const selectedModel = model || 'moonshot-v1-auto'
+    // Security: Validate request body size and structure
+    if (JSON.stringify(body).length > 100000) { // 100KB limit
+      console.error('Request body too large:', JSON.stringify(body).length)
+      return new Response(
+        JSON.stringify({ error: 'Request too large' }),
+        { status: 413, headers: { 'Content-Type': 'application/json' } }
+      )
+    }
 
-    if (!messages || !Array.isArray(messages)) {
+    // Security: Validate model is in allowed list
+    const allowedModels = [
+      'moonshot-v1-auto',
+      'kimi-k2-instruct',
+      'kimi-k2-base',
+      'kimi-k2-0905',
+      'moonshot-v1-128k',
+      'moonshot-v1-32k',
+      'moonshot-v1-8k'
+    ]
+    const selectedModel = allowedModels.includes(model) ? model : 'moonshot-v1-auto'
+
+    // Security: Validate messages structure and content
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
       console.error('Invalid messages format:', messages)
       return new Response(
         JSON.stringify({ error: 'Invalid messages format' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Security: Validate each message structure and sanitize content
+    for (const message of messages) {
+      if (!message || typeof message !== 'object' || !message.role || !message.content) {
+        console.error('Invalid message structure:', message)
+        return new Response(
+          JSON.stringify({ error: 'Invalid message structure' }),
+          { status: 400, headers: { 'Content-Type': 'application/json' } }
+        )
+      }
+
+      // Limit message content length
+      if (typeof message.content === 'string' && message.content.length > 50000) {
+        console.error('Message content too long:', message.content.length)
+        return new Response(
+          JSON.stringify({ error: 'Message content too long' }),
+          { status: 400, headers: { 'Content-Type': 'application/json' } }
+        )
+      }
+    }
+
+    // Security: Limit context length
+    if (context && typeof context === 'string' && context.length > 10000) {
+      console.error('Context too long:', context.length)
+      return new Response(
+        JSON.stringify({ error: 'Context too long' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       )
     }

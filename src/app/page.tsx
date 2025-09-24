@@ -17,34 +17,57 @@ import CopyButton from '../components/CopyButton'
  * 4. The backend streams the AI response back, which is automatically handled by useChat
  * 5. The UI updates in real-time as the AI types its response
  */
-// Available Kimi AI models with descriptions
+// Available Kimi AI models with latest capabilities (2024)
 const KIMI_MODELS = [
   {
     id: 'moonshot-v1-auto',
-    name: 'Moonshot V1 (Auto)',
-    description: 'Automatically selects the most appropriate model for your task'
+    name: 'Auto-Select',
+    description: 'Automatically selects the best model for your task',
+    badge: 'Smart'
   },
   {
-    id: 'kimi-k2-0711-preview',
-    name: 'Kimi K2 (Preview)',
-    description: 'Latest Kimi model with enhanced capabilities'
+    id: 'kimi-k2-instruct',
+    name: 'Kimi K2 Instruct',
+    description: '1T params, 256K context, tool calling, best for chat & coding',
+    badge: 'Latest'
   },
   {
-    id: 'moonshot-v1-8k',
-    name: 'Moonshot V1 (8K)',
-    description: 'Standard model with 8K context length'
+    id: 'kimi-k2-base',
+    name: 'Kimi K2 Base',
+    description: 'Foundation model for custom fine-tuning and research',
+    badge: 'Research'
   },
   {
-    id: 'moonshot-v1-32k',
-    name: 'Moonshot V1 (32K)',
-    description: 'Extended context model with 32K token support'
+    id: 'kimi-k2-0905',
+    name: 'Kimi K2 (0905)',
+    description: 'Enhanced performance, improved tool use and coding',
+    badge: 'Enhanced'
   },
   {
     id: 'moonshot-v1-128k',
     name: 'Moonshot V1 (128K)',
-    description: 'Large context model with 128K token support'
+    description: 'Legacy model with 128K context support',
+    badge: 'Legacy'
+  },
+  {
+    id: 'moonshot-v1-32k',
+    name: 'Moonshot V1 (32K)',
+    description: 'Legacy model with 32K context support',
+    badge: 'Legacy'
   }
 ]
+
+// Utility function to get badge styling
+const getBadgeStyles = (badge: string) => {
+  const styles = {
+    Latest: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
+    Enhanced: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+    Smart: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
+    Research: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
+    Legacy: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+  } as const
+  return styles[badge as keyof typeof styles] || styles.Legacy
+}
 
 export default function Chat() {
   // Model selection state
@@ -65,6 +88,24 @@ export default function Chat() {
   useEffect(() => {
     localStorage.setItem('kimi-chat-context', context)
   }, [context])
+
+  // Utility functions for enhanced features
+  const exportConversation = () => {
+    const conversation = messages.map(m => `${m.role === 'user' ? 'You' : 'Kimi AI'}: ${m.content}`).join('\n\n')
+    const blob = new Blob([conversation], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `kimi-chat-${new Date().toISOString().split('T')[0]}.txt`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const clearConversation = () => {
+    if (messages.length > 0 && confirm('Clear entire conversation? This cannot be undone.')) {
+      window.location.reload()
+    }
+  }
 
   // useChat is a powerful hook that manages all chat logic for us:
   // - messages: Array of all chat messages (user and AI)
@@ -100,27 +141,60 @@ export default function Chat() {
 
   return (
     <main className="mx-auto max-w-6xl p-6 min-h-screen transition-colors duration-200">
-      {/* Header with title and model selector */}
+      {/* Header with title, stats, and model selector */}
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Kimi on Netlify</h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Kimi on Netlify</h1>
+          {messages.length > 0 && (
+            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+              <span>{messages.length} messages</span>
+              <button
+                onClick={exportConversation}
+                className="px-2 py-1 rounded text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                title="Export conversation"
+              >
+                Export
+              </button>
+              <button
+                onClick={clearConversation}
+                className="px-2 py-1 rounded text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                title="Clear conversation"
+              >
+                Clear
+              </button>
+            </div>
+          )}
+        </div>
 
         {/* Model selector */}
         <div className="flex items-center gap-3">
           <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
             AI Model:
           </label>
-          <select
-            value={selectedModel}
-            onChange={(e) => setSelectedModel(e.target.value)}
-            disabled={isLoading}
-            className="border-2 border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed min-w-[250px] transition-colors duration-200"
-          >
-            {KIMI_MODELS.map((model) => (
-              <option key={model.id} value={model.id}>
-                {model.name} - {model.description}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <select
+              value={selectedModel}
+              onChange={(e) => setSelectedModel(e.target.value)}
+              disabled={isLoading}
+              className="border-2 border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 pr-8 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed min-w-[300px] transition-colors duration-200"
+            >
+              {KIMI_MODELS.map((model) => (
+                <option key={model.id} value={model.id}>
+                  {model.name} • {model.description}
+                </option>
+              ))}
+            </select>
+            {/* Badge for selected model */}
+            {(() => {
+              const selectedModelData = KIMI_MODELS.find(m => m.id === selectedModel)
+              if (!selectedModelData) return null
+              return (
+                <span className={`absolute right-10 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-xs rounded font-medium ${getBadgeStyles(selectedModelData.badge)}`}>
+                  {selectedModelData.badge}
+                </span>
+              )
+            })()}
+          </div>
         </div>
       </div>
 
@@ -130,13 +204,17 @@ export default function Chat() {
           <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Additional Context
           </label>
-          <span className="text-xs text-gray-500 dark:text-gray-400">
-            {context.length}/2000 characters
+          <span className={`text-xs transition-colors duration-200 ${
+            context.length > 9000 ? 'text-red-500 dark:text-red-400' :
+            context.length > 8000 ? 'text-orange-500 dark:text-orange-400' :
+            'text-gray-500 dark:text-gray-400'
+          }`}>
+            {context.length}/10,000 characters
           </span>
         </div>
         <textarea
           value={context}
-          onChange={(e) => setContext(e.target.value.slice(0, 2000))}
+          onChange={(e) => setContext(e.target.value.slice(0, 10000))}
           placeholder="Provide additional context, documents, instructions, or background information for the AI..."
           className="w-full h-24 border-2 border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none resize-none transition-colors duration-200"
           disabled={isLoading}

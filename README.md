@@ -4,10 +4,22 @@
 
 A modern, real-time AI chat application built with Next.js 15 and integrated with Kimi AI (Moonshot AI). Features streaming responses, responsive design, and seamless deployment on Netlify.
 
+## Screenshots
+
+### Main Chat Interface
+![Chat Interface](screenshots/chat-interface.png)
+*Real-time streaming responses with copy functionality and context system*
+
+### Features Overview
+![Features Overview](screenshots/features-overview.png)
+*Model selection, context input, and conversation management tools*
+
+> **Note**: To add your screenshots, place them in the `/screenshots/` directory and name them `chat-interface.png` and `features-overview.png`
+
 ## Features
 
 - **Real-time Streaming**: AI responses appear word-by-word as they are generated
-- **Dynamic Model Selection**: Choose from 5 Kimi AI models with intelligent auto-selection default
+- **Advanced Model Selection**: Choose from latest Kimi K2 models with 1T parameters and 256K context
 - **Copy Functionality**: One-click copy of AI responses with visual feedback
 - **Context System**: Provide additional context, documents, or instructions to enhance AI responses
 - **Modern UI**: Clean, responsive interface built with Tailwind CSS with dark mode support
@@ -113,19 +125,27 @@ The Docker setup includes:
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
 
-## AI Models
+## AI Models (2024 Updates)
 
-The chat interface includes a dynamic model selector with the following Kimi AI models:
+The chat interface includes the latest Kimi AI models with enhanced capabilities:
 
-| Model ID | Name | Description | Use Case |
-|----------|------|-------------|----------|
-| `moonshot-v1-auto` | **Moonshot V1 (Auto)** ⭐ | Automatically selects the most appropriate model for your task | **Default** - Best for general use |
-| `kimi-k2-0711-preview` | Kimi K2 (Preview) | Latest Kimi model with enhanced capabilities | Advanced conversations |
-| `moonshot-v1-8k` | Moonshot V1 (8K) | Standard model with 8K context length | Short to medium conversations |
-| `moonshot-v1-32k` | Moonshot V1 (32K) | Extended context model with 32K token support | Long conversations |
-| `moonshot-v1-128k` | Moonshot V1 (128K) | Large context model with 128K token support | Very long documents/conversations |
+| Model ID | Name | Badge | Description | Context | Parameters |
+|----------|------|-------|-------------|---------|------------|
+| `moonshot-v1-auto` | **Auto-Select** ⭐ | Smart | Automatically selects the best model for your task | Adaptive | Variable |
+| `kimi-k2-instruct` | **Kimi K2 Instruct** 🚀 | Latest | State-of-the-art model with tool calling capabilities | 256K | 1T total, 32B active |
+| `kimi-k2-0905` | **Kimi K2 (0905)** ⚡ | Enhanced | Improved performance, tool use, and coding | 256K | 1T total, 32B active |
+| `kimi-k2-base` | **Kimi K2 Base** 🔬 | Research | Foundation model for fine-tuning and research | 256K | 1T total, 32B active |
+| `moonshot-v1-128k` | Moonshot V1 (128K) | Legacy | Legacy model with large context support | 128K | - |
+| `moonshot-v1-32k` | Moonshot V1 (32K) | Legacy | Legacy model with extended context | 32K | - |
 
-**⭐ Recommended**: The `moonshot-v1-auto` model is set as default and intelligently chooses the best underlying model for each task.
+### Kimi K2 Capabilities
+- **Mixture-of-Experts Architecture**: 1 trillion parameters with 32 billion activated
+- **256K Context Length**: Handle extremely long documents and conversations
+- **Tool Calling**: Advanced agentic capabilities for autonomous problem-solving
+- **Coding Excellence**: State-of-the-art performance in coding benchmarks
+- **Frontier Knowledge**: Superior performance in math, reasoning, and complex tasks
+
+**⭐ Recommended**: Use `kimi-k2-instruct` for the best overall performance and latest features.
 
 ## Deployment
 

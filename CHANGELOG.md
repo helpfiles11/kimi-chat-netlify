@@ -3,13 +3,34 @@
 ## [Unreleased] - 2024-12-XX
 
 ### Added
+- **Latest Kimi K2 Models**: Updated to 2024's most advanced AI models
+  - Kimi K2 Instruct with 1T parameters and 256K context
+  - Tool calling and agentic capabilities
+  - Enhanced coding and reasoning performance
+  - Visual model badges and improved selection UI
+
+- **Enhanced Features**: Comprehensive user experience improvements
+  - Conversation export (download as .txt file)
+  - Message count tracking
+  - Clear conversation functionality
+  - Enhanced error handling and input validation
+  - Conversation management tools in header
+
+- **Security & Performance**: Major optimization and security improvements
+  - Request size validation (100KB limit)
+  - Model allowlist validation
+  - Message content length limits (50K per message)
+  - Context length validation (10K limit)
+  - Optimized badge rendering logic
+  - Bundle size: 22.3kB (+1.7kB total for all features)
+
 - **Context System**: Provide additional context to enhance AI responses
-  - Persistent context textarea (2000 character limit)
+  - Persistent context textarea (10,000 character limit)
   - localStorage persistence across browser sessions
   - Context injected as system messages in API calls
   - Visual feedback when context is active
-  - Character counter and clear context button
-  - Only +1.1kB bundle size impact
+  - Character counter with color-coded warnings
+  - Clear context button
 
 - **Copy Functionality**: One-click copy of AI responses with visual feedback
   - Native clipboard API implementation (no external dependencies)
