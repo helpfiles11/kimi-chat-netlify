@@ -94,7 +94,7 @@ export async function POST(req: Request) {
               theme: 'simple',
               format: 'json'
             }),
-            signal: AbortSignal.timeout(8000)
+            signal: AbortSignal.timeout(3000)
           })
 
           if (!searxngResponse.ok) {
@@ -121,51 +121,12 @@ export async function POST(req: Request) {
               'Accept': 'application/json',
               'Referer': `${searxngUrl}/`
             },
-            signal: AbortSignal.timeout(8000)
+            signal: AbortSignal.timeout(3000)
           })
         }
 
-        // Approach 3: Session-based request (if still failing)
-        if (!searxngResponse || !searxngResponse.ok) {
-          console.log('Both POST and GET failed, trying session-based approach')
-
-          // First get a session
-          const sessionResponse = await fetch(`${searxngUrl}/`, {
-            headers: {
-              'User-Agent': 'Mozilla/5.0 (compatible; Kimi-Chat-Bot/1.0)',
-              'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
-            },
-            signal: AbortSignal.timeout(5000)
-          })
-
-          let sessionCookie = ''
-          if (sessionResponse.ok) {
-            const cookieHeader = sessionResponse.headers.get('set-cookie')
-            if (cookieHeader) {
-              sessionCookie = cookieHeader.split(';')[0]
-            }
-          }
-
-          // Try search with session cookie
-          searxngResponse = await fetch(`${searxngUrl}/search`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-              'User-Agent': 'Mozilla/5.0 (compatible; Kimi-Chat-Bot/1.0)',
-              'Accept': 'application/json',
-              'Referer': `${searxngUrl}/`,
-              'Cookie': sessionCookie
-            },
-            body: new URLSearchParams({
-              q: query,
-              category_general: '1',
-              language: 'auto',
-              safesearch: '0',
-              format: 'json'
-            }),
-            signal: AbortSignal.timeout(8000)
-          })
-        }
+        // Skip session-based approach for now to avoid Netlify timeouts
+        // Will be enabled once SearXNG is properly configured
 
         if (searxngResponse && searxngResponse.ok) {
           const contentType = searxngResponse.headers.get('content-type') || ''
@@ -215,7 +176,7 @@ export async function POST(req: Request) {
               'X-Subscription-Token': braveApiKey,
               'Accept': 'application/json'
             },
-            signal: AbortSignal.timeout(8000) // 8 second timeout
+            signal: AbortSignal.timeout(4000) // 4 second timeout for Brave
           })
 
           if (response.ok) {
