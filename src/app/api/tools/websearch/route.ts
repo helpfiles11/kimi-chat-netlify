@@ -102,7 +102,7 @@ export async function POST(req: Request) {
             searxngResponse = null
           }
         } catch (postError) {
-          console.log('POST method failed, trying GET:', postError.message)
+          console.log('POST method failed, trying GET:', postError instanceof Error ? postError.message : 'Unknown error')
         }
 
         // Approach 2: GET with query parameters (some instances prefer this)
@@ -196,7 +196,7 @@ export async function POST(req: Request) {
           console.warn(`SearXNG error: ${searxngResponse.status} ${searxngResponse.statusText}`)
         }
       } catch (searxngError) {
-        console.warn('SearXNG not available:', searxngError.message)
+        console.warn('SearXNG not available:', searxngError instanceof Error ? searxngError.message : 'Unknown error')
       }
 
       // Fallback to Brave Search API if SearXNG failed

@@ -471,7 +471,9 @@ export async function POST(req: Request) {
           const encoder = new TextEncoder()
           const readable = new ReadableStream({
             start(controller) {
-              const content = finalCompletion.choices?.[0]?.message?.content || 'Response completed'
+              // Handle both completion response and stream types
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const content = (finalCompletion as any)?.choices?.[0]?.message?.content || 'Response completed'
               controller.enqueue(encoder.encode(content))
               controller.close()
             }
