@@ -65,52 +65,189 @@ export async function POST(req: Request) {
     let searchResults: SearchResult[] = []
 
     try {
-      // Use Brave Search API - much more comprehensive than DuckDuckGo
-      const braveApiKey = process.env.BRAVE_SEARCH_API_KEY
+      // First try SearXNG local instance
+      const searxngUrl = process.env.SEARXNG_URL || 'http://localhost:8080'
 
-      if (braveApiKey) {
-        const braveUrl = new URL('https://api.search.brave.com/res/v1/web/search')
-        braveUrl.searchParams.append('q', query)
-        braveUrl.searchParams.append('count', max_results.toString())
+      console.log(`Trying SearXNG at ${searxngUrl}`)
 
-        const response = await fetch(braveUrl, {
-          method: 'GET',
-          headers: {
-            'X-Subscription-Token': braveApiKey,
-            'Accept': 'application/json'
-          },
-          signal: AbortSignal.timeout(8000) // 8 second timeout
-        })
+      try {
+        // Try multiple SearXNG approaches for better compatibility
+        let searxngResponse: Response | null = null
 
-        if (response.ok) {
-          const data = await response.json()
+        // Approach 1: Standard POST with form data
+        try {
+          searxngResponse = await fetch(`${searxngUrl}/search`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'User-Agent': 'Mozilla/5.0 (compatible; Kimi-Chat-Bot/1.0)',
+              'Accept': 'application/json',
+              'Referer': `${searxngUrl}/`,
+              'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: new URLSearchParams({
+              q: query,
+              category_general: '1',
+              language: 'auto',
+              time_range: '',
+              safesearch: '0',
+              theme: 'simple',
+              format: 'json'
+            }),
+            signal: AbortSignal.timeout(8000)
+          })
 
-          // Extract web search results
-          if (data.web && data.web.results && Array.isArray(data.web.results)) {
-            const results: SearchResult[] = []
+          if (!searxngResponse.ok) {
+            console.log(`POST method failed: ${searxngResponse.status}, trying GET`)
+            searxngResponse = null
+          }
+        } catch (postError) {
+          console.log('POST method failed, trying GET:', postError.message)
+        }
 
-            for (const item of data.web.results.slice(0, max_results)) {
-              if (item.title && item.url && item.description) {
-                results.push({
-                  title: item.title,
-                  url: item.url,
-                  snippet: item.description,
-                  source: item.profile?.name || 'Brave Search'
-                })
+        // Approach 2: GET with query parameters (some instances prefer this)
+        if (!searxngResponse) {
+          const getUrl = new URL(`${searxngUrl}/search`)
+          getUrl.searchParams.append('q', query)
+          getUrl.searchParams.append('category_general', '1')
+          getUrl.searchParams.append('language', 'auto')
+          getUrl.searchParams.append('safesearch', '0')
+          getUrl.searchParams.append('format', 'json')
+
+          searxngResponse = await fetch(getUrl, {
+            method: 'GET',
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (compatible; Kimi-Chat-Bot/1.0)',
+              'Accept': 'application/json',
+              'Referer': `${searxngUrl}/`
+            },
+            signal: AbortSignal.timeout(8000)
+          })
+        }
+
+        // Approach 3: Session-based request (if still failing)
+        if (!searxngResponse || !searxngResponse.ok) {
+          console.log('Both POST and GET failed, trying session-based approach')
+
+          // First get a session
+          const sessionResponse = await fetch(`${searxngUrl}/`, {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (compatible; Kimi-Chat-Bot/1.0)',
+              'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+            },
+            signal: AbortSignal.timeout(5000)
+          })
+
+          let sessionCookie = ''
+          if (sessionResponse.ok) {
+            const cookieHeader = sessionResponse.headers.get('set-cookie')
+            if (cookieHeader) {
+              sessionCookie = cookieHeader.split(';')[0]
+            }
+          }
+
+          // Try search with session cookie
+          searxngResponse = await fetch(`${searxngUrl}/search`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'User-Agent': 'Mozilla/5.0 (compatible; Kimi-Chat-Bot/1.0)',
+              'Accept': 'application/json',
+              'Referer': `${searxngUrl}/`,
+              'Cookie': sessionCookie
+            },
+            body: new URLSearchParams({
+              q: query,
+              category_general: '1',
+              language: 'auto',
+              safesearch: '0',
+              format: 'json'
+            }),
+            signal: AbortSignal.timeout(8000)
+          })
+        }
+
+        if (searxngResponse && searxngResponse.ok) {
+          const contentType = searxngResponse.headers.get('content-type') || ''
+          if (contentType.includes('application/json')) {
+            const data = await searxngResponse.json()
+
+            if (data.results && Array.isArray(data.results)) {
+              const results: SearchResult[] = []
+
+              for (const item of data.results.slice(0, max_results)) {
+                if (item.title && item.url && (item.content || item.snippet)) {
+                  results.push({
+                    title: item.title,
+                    url: item.url,
+                    snippet: item.content || item.snippet || '',
+                    source: item.engine || 'SearXNG'
+                  })
+                }
+              }
+
+              if (results.length > 0) {
+                searchResults = results
+                console.log(`SearXNG returned ${searchResults.length} results`)
               }
             }
-
-            searchResults = results
-            console.log(`Brave Search returned ${searchResults.length} results`)
           }
         } else {
-          console.warn(`Brave Search API error: ${response.status} ${response.statusText}`)
+          console.warn(`SearXNG error: ${searxngResponse.status} ${searxngResponse.statusText}`)
         }
-      } else {
-        console.log('No Brave Search API key found, falling back to enhanced results')
+      } catch (searxngError) {
+        console.warn('SearXNG not available:', searxngError.message)
+      }
+
+      // Fallback to Brave Search API if SearXNG failed
+      if (searchResults.length === 0) {
+        const braveApiKey = process.env.BRAVE_SEARCH_API_KEY
+
+        if (braveApiKey) {
+          console.log('Falling back to Brave Search API')
+          const braveUrl = new URL('https://api.search.brave.com/res/v1/web/search')
+          braveUrl.searchParams.append('q', query)
+          braveUrl.searchParams.append('count', max_results.toString())
+
+          const response = await fetch(braveUrl, {
+            method: 'GET',
+            headers: {
+              'X-Subscription-Token': braveApiKey,
+              'Accept': 'application/json'
+            },
+            signal: AbortSignal.timeout(8000) // 8 second timeout
+          })
+
+          if (response.ok) {
+            const data = await response.json()
+
+            // Extract web search results
+            if (data.web && data.web.results && Array.isArray(data.web.results)) {
+              const results: SearchResult[] = []
+
+              for (const item of data.web.results.slice(0, max_results)) {
+                if (item.title && item.url && item.description) {
+                  results.push({
+                    title: item.title,
+                    url: item.url,
+                    snippet: item.description,
+                    source: item.profile?.name || 'Brave Search'
+                  })
+                }
+              }
+
+              searchResults = results
+              console.log(`Brave Search returned ${searchResults.length} results`)
+            }
+          } else {
+            console.warn(`Brave Search API error: ${response.status} ${response.statusText}`)
+          }
+        } else {
+          console.log('No Brave Search API key found, will use enhanced fallback')
+        }
       }
     } catch (apiError) {
-      console.error('Brave Search API error:', apiError)
+      console.error('Search API error:', apiError)
     }
 
     // Enhanced fallback: Provide more helpful default results

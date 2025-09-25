@@ -141,7 +141,7 @@ async function executeJavaScript(code: string): Promise<CodeRunnerResponse> {
     return {
       success: true,
       result,
-      output: safeConsole.join('\\n'),
+      output: safeConsole.join('\n'),
       language: 'javascript'
     }
 
@@ -185,7 +185,7 @@ async function executePython(code: string): Promise<CodeRunnerResponse> {
       return {
         success: true,
         result: undefined,
-        output: outputs.join('\\n'),
+        output: outputs.join('\n'),
         language: 'python'
       }
     }

@@ -455,9 +455,29 @@ export async function POST(req: Request) {
         })
 
         console.log('Tool execution completed, streaming final response')
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const stream = OpenAIStream(finalCompletion as any)
-        return new StreamingTextResponse(stream)
+        // Create stream with better error handling for Moonshot AI compatibility
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const stream = OpenAIStream(finalCompletion as any, {
+            onFinal: (completion) => {
+              console.log('Final completion:', completion?.slice(0, 100))
+            }
+          })
+          return new StreamingTextResponse(stream)
+        } catch (streamError) {
+          console.error('OpenAIStream error, falling back to simple stream:', streamError)
+
+          // Fallback to manual streaming if OpenAIStream fails
+          const encoder = new TextEncoder()
+          const readable = new ReadableStream({
+            start(controller) {
+              const content = finalCompletion.choices?.[0]?.message?.content || 'Response completed'
+              controller.enqueue(encoder.encode(content))
+              controller.close()
+            }
+          })
+          return new StreamingTextResponse(readable)
+        }
 
       } else {
         // No tools called, convert to streaming response
@@ -488,9 +508,28 @@ export async function POST(req: Request) {
         temperature: 0.7
       })
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const stream = OpenAIStream(streamingResponse as any)
-      return new StreamingTextResponse(stream)
+      // Handle fallback streaming with better error handling
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const stream = OpenAIStream(streamingResponse as any, {
+          onFinal: (completion) => {
+            console.log('Fallback stream completed:', completion?.slice(0, 100))
+          }
+        })
+        return new StreamingTextResponse(stream)
+      } catch (streamError) {
+        console.error('Fallback OpenAIStream error:', streamError)
+
+        // Ultimate fallback - return error message as stream
+        const encoder = new TextEncoder()
+        const readable = new ReadableStream({
+          start(controller) {
+            controller.enqueue(encoder.encode('I apologize, but there was an issue with the streaming response. Please try again.'))
+            controller.close()
+          }
+        })
+        return new StreamingTextResponse(readable)
+      }
     }
   } catch (error) {
     console.error('Error in chat API:', error)
