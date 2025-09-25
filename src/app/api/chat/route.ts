@@ -277,14 +277,80 @@ export async function POST(req: Request) {
       console.log('Received response from Kimi API')
       const message = completion.choices[0].message
 
-      // Check if the model wants to call tools
-      if (message.tool_calls && message.tool_calls.length > 0) {
-        console.log('Tool calls detected:', message.tool_calls)
+      // Check if the model wants to call tools (standard OpenAI format)
+      let toolCallsToExecute = message.tool_calls || []
+
+      // Also check if tool calls are embedded in the content as text (Moonshot behavior)
+      if (toolCallsToExecute.length === 0 && message.content) {
+        console.log('Checking content for tool calls:', message.content.slice(0, 200) + '...')
+
+        // Try different patterns to extract tool calls
+        let extractedToolCalls = []
+
+        // Pattern 1: Complete JSON object
+        let toolCallMatch = message.content.match(/\{"tool_calls":\s*\[([\s\S]*?)\]\}/)
+        if (toolCallMatch) {
+          try {
+            const toolCallsData = JSON.parse(`{"tool_calls":[${toolCallMatch[1]}]}`)
+            extractedToolCalls = toolCallsData.tool_calls || []
+          } catch (parseError) {
+            console.log('Pattern 1 failed:', parseError)
+          }
+        }
+
+        // Pattern 2: Just the array part
+        if (extractedToolCalls.length === 0) {
+          toolCallMatch = message.content.match(/\[\s*\{\s*"id":\s*"[^"]*",\s*"type":\s*"function"[\s\S]*?\]\s*\}/)
+          if (toolCallMatch) {
+            try {
+              const toolCallsArray = JSON.parse(toolCallMatch[0].replace(/\}\s*$/, ''))
+              extractedToolCalls = Array.isArray(toolCallsArray) ? toolCallsArray : [toolCallsArray]
+            } catch (parseError) {
+              console.log('Pattern 2 failed:', parseError)
+            }
+          }
+        }
+
+        // Pattern 3: Individual tool call objects
+        if (extractedToolCalls.length === 0) {
+          const individualMatches = message.content.match(/\{\s*"id":\s*"[^"]*",\s*"type":\s*"function",\s*"function":\s*\{[\s\S]*?\}\s*\}/g)
+          if (individualMatches) {
+            for (const match of individualMatches) {
+              try {
+                const toolCall = JSON.parse(match)
+                extractedToolCalls.push(toolCall)
+              } catch (parseError) {
+                console.log('Individual tool call parse failed:', parseError)
+              }
+            }
+          }
+        }
+
+        if (extractedToolCalls.length > 0) {
+          console.log('Found tool calls in content field:', extractedToolCalls)
+          toolCallsToExecute = extractedToolCalls
+          // Clean up the content by removing tool call patterns
+          message.content = message.content
+            .replace(/\{"tool_calls":\s*\[([\s\S]*?)\]\}/, '')
+            .replace(/\[\s*\{\s*"id":\s*"[^"]*",\s*"type":\s*"function"[\s\S]*?\]\s*\}/, '')
+            .replace(/\{\s*"id":\s*"[^"]*",\s*"type":\s*"function",\s*"function":\s*\{[\s\S]*?\}\s*\}/g, '')
+            .trim()
+        }
+      }
+
+      // Execute tools if found
+      if (toolCallsToExecute.length > 0) {
+        console.log('Tool calls detected:', toolCallsToExecute)
 
         // Execute each tool call
         const toolMessages = []
 
-        for (const toolCall of message.tool_calls) {
+        for (const toolCall of toolCallsToExecute) {
+          if (!toolCall.function || !toolCall.function.name) {
+            console.log('Invalid tool call structure:', toolCall)
+            continue
+          }
+
           const { name, arguments: args } = toolCall.function
           console.log(`Executing tool: ${name} with arguments:`, args)
 
@@ -342,7 +408,7 @@ export async function POST(req: Request) {
           // Add tool result message
           toolMessages.push({
             role: 'tool' as const,
-            tool_call_id: toolCall.id,
+            tool_call_id: toolCall.id || `${name}-${Date.now()}`,
             content: JSON.stringify(toolResult)
           })
         }
