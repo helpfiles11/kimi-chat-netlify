@@ -115,6 +115,7 @@ export default function Chat() {
   // Tool execution tracking
   const [executingTools, setExecutingTools] = useState<Set<string>>(new Set())
   const [toolResults, setToolResults] = useState<Map<string, unknown>>(new Map())
+  const [sessionTokens, setSessionTokens] = useState(0)
   const alreadyCalledTools = useRef<Set<string>>(new Set())
   const currentResponse = useRef<string>('')
 
@@ -205,6 +206,8 @@ export default function Chat() {
 
   const clearConversation = () => {
     if (messages.length > 0 && confirm('Clear entire conversation? This cannot be undone.')) {
+      // Reset session token counter before reload
+      setSessionTokens(0)
       window.location.reload()
     }
   }
@@ -342,6 +345,8 @@ export default function Chat() {
         const result = await response.json()
         if (result.success) {
           setTokenEstimate(result.data)
+          // Add estimated tokens to session counter
+          setSessionTokens(prev => prev + result.data.total_tokens)
           // Store in localStorage for UsageInfo component
           localStorage.setItem('lastTokenEstimate', JSON.stringify(result.data))
         }
@@ -426,7 +431,7 @@ export default function Chat() {
       </div>
 
       {/* Usage and Balance Information */}
-      <UsageInfo className="mb-4" />
+      <UsageInfo className="mb-4" sessionTokens={sessionTokens} />
 
       {/* Context Input Section */}
       <div className="mb-4">
@@ -580,8 +585,16 @@ export default function Chat() {
                               <p className="mb-2"><strong>Search Results:</strong></p>
                               {toolResult.result.results.slice(0, 3).map((res, idx: number) => (
                                 <div key={idx} className="mb-2 p-2 bg-white dark:bg-gray-700 rounded">
-                                  <div className="font-medium text-blue-600">{res.title}</div>
-                                  <div className="text-xs text-gray-500 mt-1">{res.snippet}</div>
+                                  <a
+                                    href={res.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline"
+                                  >
+                                    {res.title}
+                                  </a>
+                                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{res.snippet}</div>
+                                  <div className="text-xs text-gray-400 dark:text-gray-500 mt-1 truncate">{res.url}</div>
                                 </div>
                               ))}
                             </div>

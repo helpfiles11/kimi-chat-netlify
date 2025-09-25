@@ -82,6 +82,9 @@ export async function POST(req: Request) {
       braveUrl.searchParams.append('ui_lang', 'en-US')
       braveUrl.searchParams.append('country', 'US')
       braveUrl.searchParams.append('safesearch', 'moderate')
+      braveUrl.searchParams.append('text_decorations', 'false') // Clean snippets without highlighting
+      braveUrl.searchParams.append('extra_snippets', 'true')    // More context per result
+      braveUrl.searchParams.append('spellcheck', 'true')        // Auto-correct queries
 
       const response = await fetch(braveUrl, {
         method: 'GET',
@@ -99,6 +102,17 @@ export async function POST(req: Request) {
       }
 
       const data = await response.json()
+
+      // Log rate limiting information for monitoring
+      const rateLimitHeaders = {
+        limit: response.headers.get('X-RateLimit-Limit'),
+        remaining: response.headers.get('X-RateLimit-Remaining'),
+        reset: response.headers.get('X-RateLimit-Reset')
+      }
+      if (rateLimitHeaders.remaining) {
+        console.log('Brave API rate limits:', rateLimitHeaders)
+      }
+
       console.log('Brave Search response keys:', Object.keys(data))
 
       // Extract web search results with detailed logging

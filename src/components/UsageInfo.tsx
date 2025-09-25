@@ -17,9 +17,10 @@ interface TokenEstimate {
 
 interface UsageInfoProps {
   className?: string
+  sessionTokens?: number
 }
 
-export default function UsageInfo({ className = '' }: UsageInfoProps) {
+export default function UsageInfo({ className = '', sessionTokens = 0 }: UsageInfoProps) {
   const [balance, setBalance] = useState<BalanceData | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -139,6 +140,22 @@ export default function UsageInfo({ className = '' }: UsageInfoProps) {
           </span>
         </div>
       </div>
+
+      {/* Token Usage Section */}
+      {sessionTokens > 0 && (
+        <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs text-gray-500 dark:text-gray-400">Session Tokens</span>
+            <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
+              {sessionTokens.toLocaleString()}
+            </span>
+          </div>
+          <div className="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500">
+            <span>Est. Cost</span>
+            <span>${(sessionTokens * 0.000012).toFixed(4)}</span>
+          </div>
+        </div>
+      )}
 
       {/* Status indicator */}
       <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
