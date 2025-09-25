@@ -334,7 +334,7 @@ export async function POST(req: Request) {
           // Pattern matches: "text:{"tool_calls":[" or just "{"tool_calls":["
           const partialToolCallPattern = /\{"tool_calls":\s*\[.*$/
           if (partialToolCallPattern.test(message.content)) {
-            console.log('Detected partial tool call pattern - attempting Partial Mode completion')
+            console.log('Detected partial tool call pattern - skipping Partial Mode to prevent 504 timeout on Netlify')
 
             // Find where the tool call JSON starts
             const jsonStartIndex = message.content.indexOf('{"tool_calls":')
@@ -344,67 +344,10 @@ export async function POST(req: Request) {
             console.log('Prefix text:', prefixText)
             console.log('Partial JSON:', partialJson.slice(0, 100) + '...')
 
-            // Try a completion request to get the full tool call using Partial Mode
-            try {
-              const completionRequest = await openai.chat.completions.create({
-                model: selectedModel,
-                stream: false,
-                messages: [
-                  ...contextualMessages,
-                  {
-                    role: 'assistant',
-                    content: partialJson,
-                    partial: true
-                  }
-                ],
-                tools: tools,
-                temperature: 0.7
-              })
-
-              const completedMessage = completionRequest.choices[0].message
-              if (completedMessage.tool_calls && completedMessage.tool_calls.length > 0) {
-                console.log('Successfully completed partial tool call via Partial Mode')
-                toolCallsToExecute = completedMessage.tool_calls
-                // Keep the prefix text for user display (API doesn't include leading text)
-                message.content = prefixText.trim()
-              } else if (completedMessage.content) {
-                console.log('Partial completion returned content, attempting to parse')
-                console.log('Completion content:', completedMessage.content.slice(0, 200) + '...')
-
-                // Important: API response doesn't include leading text, need to manually concatenate
-                try {
-                  const fullJson = partialJson + completedMessage.content
-                  console.log('Full JSON to parse:', fullJson.slice(0, 200) + '...')
-
-                  const completedData = JSON.parse(fullJson)
-                  if (completedData.tool_calls && completedData.tool_calls.length > 0) {
-                    console.log('Successfully parsed completed tool calls')
-                    toolCallsToExecute = completedData.tool_calls
-                    // Keep only the prefix text for user display
-                    message.content = prefixText.trim()
-                  }
-                } catch (parseError) {
-                  console.log('Failed to parse completed JSON:', parseError)
-                  // If JSON parsing fails, try to extract tool calls from the completion content directly
-                  try {
-                    // The completion might return just the array part: [{"id":"..."}]
-                    const toolCallsMatch = completedMessage.content.match(/\[[\s\S]*\]/)
-                    if (toolCallsMatch) {
-                      const toolCallsArray = JSON.parse(toolCallsMatch[0])
-                      if (Array.isArray(toolCallsArray) && toolCallsArray.length > 0) {
-                        console.log('Extracted tool calls from completion array')
-                        toolCallsToExecute = toolCallsArray
-                        message.content = prefixText.trim()
-                      }
-                    }
-                  } catch (arrayParseError) {
-                    console.log('Failed to parse as array:', arrayParseError)
-                  }
-                }
-              }
-            } catch (partialError) {
-              console.log('Partial Mode completion failed:', partialError)
-            }
+            // Partial Mode disabled for Netlify to prevent 504 timeouts
+            // Instead, clean up the message for user display
+            message.content = prefixText.trim() || 'I detected a request for tool usage, but the response was incomplete. Please try asking again with a simpler request.'
+            console.log('Partial Mode skipped, returning simplified response to user')
           }
         }
 

@@ -12,23 +12,23 @@ A modern, real-time AI chat application built with Next.js 15 and integrated wit
 
 ## Features
 
-### 🤖 **Advanced AI Capabilities**
+### Advanced AI Capabilities
 - **Tool Calling System**: AI can execute code, solve math problems, analyze data, and search the web
 - **Real-time Web Search**: K2 models can access current information and news via WebSearch tool
 - **Real-time Streaming**: Word-by-word response generation
-- **12 Official Models**: Including latest Kimi K2 family with 1T parameters 🎉
+- **12 Official Models**: Including latest Kimi K2 family with 1T parameters
 
-### 💰 **Cost Transparency**
+### Cost Transparency
 - **Live Token Estimation**: See costs before sending requests
 - **Account Balance**: Real-time balance monitoring with auto-refresh
 - **Usage Analytics**: Track spending and optimize usage patterns
 
-### 📁 **File Processing**
+### File Processing
 - **Smart Upload**: Local (1MB) or server-side (100MB) processing
 - **Multiple Formats**: Text, code, markdown, PDF, and more
 - **Drag & Drop**: Intuitive file handling interface
 
-### 🎨 **Professional UI**
+### Professional UI
 - **Modern Design**: Clean interface with dark mode
 - **Responsive**: Works perfectly on all devices
 - **Copy & Export**: Save conversations and responses
@@ -161,17 +161,17 @@ docker run -p 3000:3000 \
 
 | Model ID | Name | Badge | Description | Special Features |
 |----------|------|-------|-------------|------------------|
-| `kimi-k2-turbo-preview` | **Kimi K2 Turbo** ⚡🎉 | Turbo | Fastest K2 model with optimized speed | Speed optimized |
-| `kimi-k2-0905-preview` | **Kimi K2 (Sept 2024)** 🚀🎉 | Enhanced | September 2024 K2 with enhanced performance | Latest K2 features |
-| `kimi-latest` | **Kimi Latest** 🌟🎉 | Latest | Always the newest and most advanced Kimi model | Auto-updates to latest |
-| `kimi-thinking-preview` | **Kimi Thinking** 🤔 | Reasoning | Advanced reasoning with step-by-step thinking | Chain-of-thought |
-| `moonshot-v1-auto` | **Auto-Select (Moonshot only)** ⭐ | Smart | Selects best Moonshot model - cannot exceed K2 family | Intelligent routing |
-| `moonshot-v1-32k-vision-preview` | **Vision (32K)** 👁️ | Vision | Image understanding + 32K context | Multimodal |
-| `moonshot-v1-128k` | **Moonshot V1 (128K)** 📚 | Large Context | 128K token context for long documents | Extended context |
-| `moonshot-v1-32k` | **Moonshot V1 (32K)** 📄 | Extended | 32K token context for conversations | Balanced |
-| `moonshot-v1-8k` | **Moonshot V1 (8K)** ⚡ | Fast | 8K context optimized for speed | Fast response |
+| `kimi-k2-turbo-preview` | **Kimi K2 Turbo** | Turbo | Fastest K2 model with optimized speed | Speed optimized |
+| `kimi-k2-0905-preview` | **Kimi K2 (Sept 2024)** | Enhanced | September 2024 K2 with enhanced performance | Latest K2 features |
+| `kimi-latest` | **Kimi Latest** | Latest | Always the newest and most advanced Kimi model | Auto-updates to latest |
+| `kimi-thinking-preview` | **Kimi Thinking** | Reasoning | Advanced reasoning with step-by-step thinking | Chain-of-thought |
+| `moonshot-v1-auto` | **Auto-Select (Moonshot only)** | Smart | Selects best Moonshot model - cannot exceed K2 family | Intelligent routing |
+| `moonshot-v1-32k-vision-preview` | **Vision (32K)** | Vision | Image understanding + 32K context | Multimodal |
+| `moonshot-v1-128k` | **Moonshot V1 (128K)** | Large Context | 128K token context for long documents | Extended context |
+| `moonshot-v1-32k` | **Moonshot V1 (32K)** | Extended | 32K token context for conversations | Balanced |
+| `moonshot-v1-8k` | **Moonshot V1 (8K)** | Fast | 8K context optimized for speed | Fast response |
 
-### 🎯 Additional Models Available via API
+### Additional Models Available via API
 - `kimi-k2-0711-preview` - July 2024 K2 preview
 - `moonshot-v1-8k-vision-preview` - 8K vision model
 - `moonshot-v1-128k-vision-preview` - 128K vision model
@@ -187,31 +187,31 @@ docker run -p 3000:3000 \
 
 The application provides powerful tool calling capabilities, especially optimized for Kimi K2 models:
 
-### 🔍 **WebSearch Tool**
+### WebSearch Tool
 - **Real-time Information**: Access current news, facts, and live data
 - **Search Integration**: Uses DuckDuckGo API for reliable results
 - **Smart Fallbacks**: Graceful handling when search services are unavailable
 - **Best for**: Current events, recent developments, fact-checking
 
-### 💻 **CodeRunner Tool**
+### CodeRunner Tool
 - **JavaScript & Python**: Execute code safely in sandboxed environment
 - **Data Analysis**: Perfect for calculations, algorithms, and data processing
 - **Security**: Isolated execution with content filtering
 - **Best for**: Programming tasks, complex calculations, data analysis
 
-### 🧮 **Calculator Tool**
+### Calculator Tool
 - **Mathematical Operations**: Arithmetic, algebra, trigonometry, statistics
 - **Multiple Operations**: Evaluate, solve, simplify, derivatives, integrals
 - **High Precision**: Reliable mathematical computations
 - **Best for**: Mathematical problems, formula evaluation
 
-### 📊 **TextAnalyzer Tool**
+### TextAnalyzer Tool
 - **Sentiment Analysis**: Understand emotional tone of text
 - **Keyword Extraction**: Identify important terms and themes
 - **Statistics**: Word count, readability metrics, language detection
 - **Best for**: Content analysis, writing improvement, text insights
 
-### 📈 **DataProcessor Tool**
+### DataProcessor Tool
 - **Format Support**: CSV, JSON, structured data processing
 - **Operations**: Parse, filter, sort, aggregate, visualize data
 - **Statistical Analysis**: Comprehensive data insights
@@ -224,11 +224,11 @@ The application provides powerful tool calling capabilities, especially optimize
 - **Error Handling**: Robust error recovery and user feedback
 
 ### Tool Calling Status
-- **✅ Tool Endpoints**: All tool APIs (WebSearch, CodeRunner, Calculator, etc.) are fully functional
-- **✅ Tool Definitions**: Properly configured in chat API following Moonshot AI specifications
-- **✅ Tool Execution**: Implemented proper tool calling based on official Moonshot AI documentation
-- **✅ Integration**: K2 models can now automatically execute tools and integrate results into responses
-- **✅ Partial Mode Support**: Advanced implementation handles Moonshot AI's unique Partial Mode architecture
+- **Tool Endpoints**: All tool APIs (WebSearch, CodeRunner, Calculator, etc.) are fully functional
+- **Tool Definitions**: Properly configured in chat API following Moonshot AI specifications
+- **Tool Execution**: Implemented proper tool calling based on official Moonshot AI documentation
+- **Integration**: K2 models can now automatically execute tools and integrate results into responses
+- **Partial Mode Support**: Advanced implementation handles Moonshot AI's unique Partial Mode architecture
 
 ### How Tool Calling Works
 1. **Automatic Detection**: K2 models analyze user requests and determine when tools are needed
@@ -309,7 +309,7 @@ User: "Search for current Bitcoin price and calculate ROI on a $1000 investment 
 → Provides complete analysis with current data
 ```
 
-**⭐ Recommended**:
+**Recommended**:
 - `kimi-k2-turbo-preview` - Best performance with fastest speed
 - `kimi-k2-0905-preview` - Latest K2 features and enhanced capabilities
 - `kimi-latest` - Always gets the newest model automatically

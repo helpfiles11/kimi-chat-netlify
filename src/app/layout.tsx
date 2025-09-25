@@ -19,7 +19,6 @@ const geistSans = Geist({
   variable: "--font-geist-sans", // CSS custom property name
   subsets: ["latin"],           // Only load Latin characters to reduce bundle size
   display: "swap",              // Use font-display: swap to prevent FOIT
-  preload: true,                // Explicitly preload the font
 });
 
 // Load the Geist Mono font for code/monospace text
@@ -27,7 +26,6 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono", // CSS custom property name
   subsets: ["latin"],
   display: "swap",              // Use font-display: swap to prevent FOIT
-  preload: false,               // Don't preload mono font as it's used less frequently
 });
 
 // Metadata for SEO and browser tabs
