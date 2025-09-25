@@ -1,5 +1,19 @@
 # Kimi Chat Application - Future Features Roadmap
 
+## 🎯 **Core Project Principles**
+
+### Development Philosophy
+- **Fast, Clean Code Without Complexity**: Prioritize simplicity and performance over feature bloat
+- **Reliability First**: Consistent ~1000ms response times, no 504 timeouts
+- **User-Centered Design**: Focus on functional, responsive experience
+- **Iterative Improvement**: Learn from production issues and optimize continuously
+
+### Key Technical Discoveries
+- **WebSearch Optimization** (Sept 2025): Removed SearXNG complexity, focused on Brave Search API with gzip compression and 6-second timeouts - reduced response times from 900ms+ to consistent ~1000ms
+- **Netlify Edge Function Limits**: 10-second timeout requires careful API orchestration
+- **Tool System Design**: Client-side intent detection enables instant tool execution during AI streaming
+- **Error Handling Strategy**: Comprehensive logging and intelligent fallbacks improve user experience
+
 ## 🔍 **Search & Information Retrieval**
 
 ### SearXNG Integration (High Priority)
@@ -173,9 +187,10 @@
 
 ### Phase 1 (Next 2-4 weeks)
 1. ✅ Fix streaming parsing errors
-2. 🔄 SearXNG configuration and integration
-3. Enhanced CodeRunner capabilities
-4. UI/UX improvements
+2. ✅ WebSearch API optimization (Brave Search focus)
+3. 🔄 SearXNG configuration and integration (future consideration)
+4. Enhanced CodeRunner capabilities
+5. UI/UX improvements
 
 ### Phase 2 (1-2 months)
 1. OCI migration planning
