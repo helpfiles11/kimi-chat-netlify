@@ -280,8 +280,18 @@ export default function Chat() {
         console.log('Full response intent detected:', fullIntent)
         executeTool(fullIntent, lastMessage.id)
       }
+
     }
   }, [messages, executeTool])
+
+  // Clean message content for display (remove tool calls JSON)
+  const cleanMessageContent = useCallback((content: string): string => {
+    return content
+      .replace(/\{"tool_calls":\s*\[([\s\S]*?)\]\}/g, '')
+      .replace(/\[\s*\{\s*"id":\s*"[^"]*",\s*"type":\s*"function"[\s\S]*?\]/g, '')
+      .replace(/\{\s*"id":\s*"[^"]*",\s*"type":\s*"function",\s*"function":\s*\{[\s\S]*?\}\s*\}/g, '')
+      .trim()
+  }, [])
 
   // Token estimation function
   const estimateTokens = useCallback(async (newMessage: string) => {
@@ -533,7 +543,9 @@ export default function Chat() {
               )}
             </div>
             {/* Show the message content, preserving line breaks with whitespace-pre-wrap */}
-            <div className="whitespace-pre-wrap text-gray-800 dark:text-gray-200 leading-relaxed">{m.content}</div>
+            <div className="whitespace-pre-wrap text-gray-800 dark:text-gray-200 leading-relaxed">
+              {m.role === 'assistant' ? cleanMessageContent(m.content) : m.content}
+            </div>
 
             {/* Tool execution results */}
             {m.role === 'assistant' && Array.from(toolResults.entries()).some(([, result]) =>
