@@ -274,7 +274,7 @@ export async function POST(req: Request) {
     console.log('Received response from Kimi API, creating stream')
 
     // Convert the response to a readable stream using Vercel AI SDK
-    // This allows the frontend to receive the response word-by-word as the AI generates it
+    // For now, handle tool calling at the model level rather than in the stream callback
     // Type assertion to fix compatibility between OpenAI v4 and AI SDK v3
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const stream = OpenAIStream(response as any)
