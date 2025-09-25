@@ -103,7 +103,10 @@ Add your configuration to `.env.local`:
 ```
 MOONSHOT_API_KEY=your_kimi_api_key_here
 AUTH_PASSWORD=your_secure_password_here
+BRAVE_SEARCH_API_KEY=your_brave_search_api_key_here  # Optional - for enhanced web search
 ```
+
+**Note**: The Brave Search API key is optional. Without it, WebSearch will use enhanced fallback results with curated information for common queries.
 
 4. Start the development server:
 ```bash
@@ -188,10 +191,10 @@ docker run -p 3000:3000 \
 The application provides powerful tool calling capabilities, especially optimized for Kimi K2 models:
 
 ### WebSearch Tool
-- **Real-time Information**: Access current news, facts, and live data
-- **Search Integration**: Uses DuckDuckGo API for reliable results
-- **Smart Fallbacks**: Graceful handling when search services are unavailable
-- **Best for**: Current events, recent developments, fact-checking
+- **Real-time Information**: Access current news, facts, and live data with over 30 billion indexed pages
+- **Search Integration**: Uses Brave Search API for comprehensive, high-quality results
+- **Enhanced Fallbacks**: Intelligent fallback results with scientific references when API unavailable
+- **Best for**: Current events, recent developments, fact-checking, scientific research
 
 ### CodeRunner Tool
 - **JavaScript & Python**: Execute code safely in sandboxed environment
@@ -335,6 +338,7 @@ User: "Search for current Bitcoin price and calculate ROI on a $1000 investment 
 |----------|-------------|----------|
 | `MOONSHOT_API_KEY` | Your Kimi AI API key | Yes |
 | `AUTH_PASSWORD` | Password to access the chat interface | Yes |
+| `BRAVE_SEARCH_API_KEY` | Your Brave Search API key for enhanced WebSearch results | Optional |
 
 ## Architecture Overview
 

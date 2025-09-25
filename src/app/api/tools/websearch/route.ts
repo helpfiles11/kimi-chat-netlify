@@ -65,75 +65,52 @@ export async function POST(req: Request) {
     let searchResults: SearchResult[] = []
 
     try {
-      // Use DuckDuckGo Instant Answer API (free, no API key required)
-      const duckDuckGoUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`
+      // Use Brave Search API - much more comprehensive than DuckDuckGo
+      const braveApiKey = process.env.BRAVE_SEARCH_API_KEY
 
-      const response = await fetch(duckDuckGoUrl, {
-        method: 'GET',
-        headers: {
-          'User-Agent': 'KimiChatApp/1.0 (Educational Purpose)'
-        },
-        signal: AbortSignal.timeout(10000) // 10 second timeout
-      })
+      if (braveApiKey) {
+        const braveUrl = new URL('https://api.search.brave.com/res/v1/web/search')
+        braveUrl.searchParams.append('q', query)
+        braveUrl.searchParams.append('count', max_results.toString())
 
-      if (response.ok) {
-        const data = await response.json()
+        const response = await fetch(braveUrl, {
+          method: 'GET',
+          headers: {
+            'X-Subscription-Token': braveApiKey,
+            'Accept': 'application/json'
+          },
+          signal: AbortSignal.timeout(8000) // 8 second timeout
+        })
 
-        // Extract and structure results from DuckDuckGo response
-        const results: SearchResult[] = []
+        if (response.ok) {
+          const data = await response.json()
 
-        // Priority 1: Add direct answer if available (highest quality)
-        if (data.Answer && data.AnswerType) {
-          results.push({
-            title: data.AnswerType || 'Direct Answer',
-            url: data.AbstractURL || '#',
-            snippet: data.Answer,
-            source: 'DuckDuckGo Instant Answer'
-          })
-        }
+          // Extract web search results
+          if (data.web && data.web.results && Array.isArray(data.web.results)) {
+            const results: SearchResult[] = []
 
-        // Priority 2: Add abstract/summary if available and different from answer
-        if (data.Abstract && data.Abstract !== data.Answer) {
-          results.push({
-            title: data.AbstractSource || 'Summary',
-            url: data.AbstractURL || '#',
-            snippet: data.Abstract,
-            source: data.AbstractSource || 'Wikipedia'
-          })
-        }
-
-        // Priority 3: Add related topics for broader context
-        if (data.RelatedTopics && Array.isArray(data.RelatedTopics)) {
-          for (const topic of data.RelatedTopics.slice(0, max_results - results.length)) {
-            if (topic.Text && topic.FirstURL) {
-              results.push({
-                title: topic.Text.split(' - ')[0] || 'Related Topic',
-                url: topic.FirstURL,
-                snippet: topic.Text,
-                source: 'DuckDuckGo'
-              })
+            for (const item of data.web.results.slice(0, max_results)) {
+              if (item.title && item.url && item.description) {
+                results.push({
+                  title: item.title,
+                  url: item.url,
+                  snippet: item.description,
+                  source: item.profile?.name || 'Brave Search'
+                })
+              }
             }
-          }
-        }
 
-        // Priority 4: Add infobox data for structured information
-        if (data.Infobox && data.Infobox.content && Array.isArray(data.Infobox.content)) {
-          for (const item of data.Infobox.content.slice(0, Math.max(0, max_results - results.length))) {
-            if (item.label && item.value) {
-              results.push({
-                title: item.label,
-                url: data.AbstractURL || '#',
-                snippet: typeof item.value === 'string' ? item.value : JSON.stringify(item.value),
-                source: 'Infobox'
-              })
-            }
+            searchResults = results
+            console.log(`Brave Search returned ${searchResults.length} results`)
           }
+        } else {
+          console.warn(`Brave Search API error: ${response.status} ${response.statusText}`)
         }
-
-        searchResults = results.slice(0, max_results)
+      } else {
+        console.log('No Brave Search API key found, falling back to enhanced results')
       }
     } catch (apiError) {
-      console.error('DuckDuckGo API error:', apiError)
+      console.error('Brave Search API error:', apiError)
     }
 
     // Enhanced fallback: Provide more helpful default results
