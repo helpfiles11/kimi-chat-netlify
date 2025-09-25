@@ -564,7 +564,7 @@ export default function Chat() {
                       executionTime: number
                     }
                     return (
-                    <div key={toolKey} className="p-3 bg-gray-50 dark:bg-gray-600 rounded-lg border-l-4 border-blue-500">
+                      <div key={toolKey} className="p-3 bg-gray-50 dark:bg-gray-600 rounded-lg border-l-4 border-blue-500">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
                           Tool: {toolResult.toolCall.name}
@@ -591,9 +591,10 @@ export default function Chat() {
                         <div className="text-sm text-red-600 dark:text-red-400">
                           Error: {toolResult.error}
                         </div>
-                      )}
-                    </div>
-                  )})}
+                        )}
+                      </div>
+                    )
+                  })}
               </div>
             )}
 
