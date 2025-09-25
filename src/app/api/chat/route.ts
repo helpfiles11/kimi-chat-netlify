@@ -60,14 +60,15 @@ export async function POST(req: Request) {
     }
 
     // Security: Validate model is in allowed list - OFFICIAL from Moonshot API /v1/models
+    // Ordered by performance: Best K2 models first, then latest, then other models
     const allowedModels = [
-      'kimi-latest',
-      'moonshot-v1-auto',
       'kimi-k2-turbo-preview',
       'kimi-k2-0905-preview',
+      'kimi-latest',
       'kimi-thinking-preview',
-      'moonshot-v1-128k',
+      'moonshot-v1-auto',
       'moonshot-v1-32k-vision-preview',
+      'moonshot-v1-128k',
       'moonshot-v1-32k',
       'moonshot-v1-8k',
       // Additional models from API response but not in UI (for completeness)
@@ -75,7 +76,7 @@ export async function POST(req: Request) {
       'moonshot-v1-8k-vision-preview',
       'moonshot-v1-128k-vision-preview'
     ]
-    const selectedModel = allowedModels.includes(model) ? model : 'moonshot-v1-auto'
+    const selectedModel = allowedModels.includes(model) ? model : 'kimi-k2-turbo-preview'
 
     // Security: Validate messages structure and content
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -143,6 +144,30 @@ export async function POST(req: Request) {
 
     // Define available tools for AI to use
     const tools = [
+      {
+        type: "function" as const,
+        function: {
+          name: "WebSearch",
+          description: "Search the web for current information, news, facts, and real-time data. Use this to find up-to-date information that may not be in your training data.",
+          parameters: {
+            type: "object",
+            properties: {
+              query: {
+                type: "string",
+                description: "Search query to find information on the web"
+              },
+              max_results: {
+                type: "number",
+                minimum: 1,
+                maximum: 10,
+                default: 5,
+                description: "Maximum number of search results to return (1-10)"
+              }
+            },
+            required: ["query"]
+          }
+        }
+      },
       {
         type: "function" as const,
         function: {

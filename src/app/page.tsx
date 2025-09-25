@@ -20,20 +20,8 @@ import UsageInfo from '../components/UsageInfo'
  * 5. The UI updates in real-time as the AI types its response
  */
 // Available Kimi AI models - OFFICIAL from Moonshot API /v1/models (2024)
+// Ordered by performance: Best K2 models first, then latest, then other Kimi models, Moonshot models last
 const KIMI_MODELS = [
-  {
-    id: 'kimi-latest',
-    name: 'Kimi Latest',
-    description: 'Always the newest and most advanced Kimi model available',
-    badge: 'Latest',
-    promotion: true
-  },
-  {
-    id: 'moonshot-v1-auto',
-    name: 'Auto-Select (Moonshot only)',
-    description: 'Automatically selects best Moonshot model - cannot exceed K2 family',
-    badge: 'Smart'
-  },
   {
     id: 'kimi-k2-turbo-preview',
     name: 'Kimi K2 Turbo',
@@ -49,22 +37,35 @@ const KIMI_MODELS = [
     promotion: true
   },
   {
+    id: 'kimi-latest',
+    name: 'Kimi Latest',
+    description: 'Always the newest and most advanced Kimi model available',
+    badge: 'Latest',
+    promotion: true
+  },
+  {
     id: 'kimi-thinking-preview',
     name: 'Kimi Thinking',
     description: 'Advanced reasoning model with step-by-step thinking',
     badge: 'Reasoning'
   },
   {
-    id: 'moonshot-v1-128k',
-    name: 'Moonshot V1 (128K)',
-    description: 'Large context model with 128K token support',
-    badge: 'Large Context'
+    id: 'moonshot-v1-auto',
+    name: 'Auto-Select (Moonshot only)',
+    description: 'Automatically selects best Moonshot model - cannot exceed K2 family',
+    badge: 'Smart'
   },
   {
     id: 'moonshot-v1-32k-vision-preview',
     name: 'Moonshot V1 Vision (32K)',
     description: 'Vision model with image understanding and 32K context',
     badge: 'Vision'
+  },
+  {
+    id: 'moonshot-v1-128k',
+    name: 'Moonshot V1 (128K)',
+    description: 'Large context model with 128K token support',
+    badge: 'Large Context'
   },
   {
     id: 'moonshot-v1-32k',

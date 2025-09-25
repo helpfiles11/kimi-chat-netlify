@@ -13,7 +13,8 @@ A modern, real-time AI chat application built with Next.js 15 and integrated wit
 ## Features
 
 ### 🤖 **Advanced AI Capabilities**
-- **Tool Calling System**: AI can execute code, solve math problems, and analyze data
+- **Tool Calling System**: AI can execute code, solve math problems, analyze data, and search the web
+- **Real-time Web Search**: K2 models can access current information and news via WebSearch tool
 - **Real-time Streaming**: Word-by-word response generation
 - **12 Official Models**: Including latest Kimi K2 family with 1T parameters 🎉
 
@@ -37,7 +38,7 @@ A modern, real-time AI chat application built with Next.js 15 and integrated wit
 - **Frontend**: Next.js 15.5, React 19, TypeScript 5
 - **Styling**: Tailwind CSS v4 with CSS-in-JS
 - **AI Integration**: Moonshot AI via OpenAI-compatible SDK v4
-- **Tool System**: Custom tool calling with code execution
+- **Tool System**: Custom tool calling with code execution and web search
 - **File Processing**: Multi-format support with server upload
 - **Streaming**: Vercel AI SDK v3 with real-time responses
 - **Cost Tracking**: Token estimation and balance monitoring
@@ -59,6 +60,7 @@ src/
 │       ├── estimate-tokens/# Token cost estimation
 │       ├── upload-file/    # File upload to Moonshot API
 │       └── tools/          # Tool execution endpoints
+│           ├── websearch/  # Web search for real-time information
 │           ├── calculator/ # Mathematical operations
 │           └── code-runner/# Code execution (JS/Python)
 ├── components/
@@ -159,13 +161,13 @@ docker run -p 3000:3000 \
 
 | Model ID | Name | Badge | Description | Special Features |
 |----------|------|-------|-------------|------------------|
-| `kimi-latest` | **Kimi Latest** 🌟🎉 | Latest | Always the newest and most advanced Kimi model | Auto-updates to latest |
-| `moonshot-v1-auto` | **Auto-Select (Moonshot only)** ⭐ | Smart | Selects best Moonshot model - cannot exceed K2 family | Intelligent routing |
 | `kimi-k2-turbo-preview` | **Kimi K2 Turbo** ⚡🎉 | Turbo | Fastest K2 model with optimized speed | Speed optimized |
 | `kimi-k2-0905-preview` | **Kimi K2 (Sept 2024)** 🚀🎉 | Enhanced | September 2024 K2 with enhanced performance | Latest K2 features |
+| `kimi-latest` | **Kimi Latest** 🌟🎉 | Latest | Always the newest and most advanced Kimi model | Auto-updates to latest |
 | `kimi-thinking-preview` | **Kimi Thinking** 🤔 | Reasoning | Advanced reasoning with step-by-step thinking | Chain-of-thought |
-| `moonshot-v1-128k` | **Moonshot V1 (128K)** 📚 | Large Context | 128K token context for long documents | Extended context |
+| `moonshot-v1-auto` | **Auto-Select (Moonshot only)** ⭐ | Smart | Selects best Moonshot model - cannot exceed K2 family | Intelligent routing |
 | `moonshot-v1-32k-vision-preview` | **Vision (32K)** 👁️ | Vision | Image understanding + 32K context | Multimodal |
+| `moonshot-v1-128k` | **Moonshot V1 (128K)** 📚 | Large Context | 128K token context for long documents | Extended context |
 | `moonshot-v1-32k` | **Moonshot V1 (32K)** 📄 | Extended | 32K token context for conversations | Balanced |
 | `moonshot-v1-8k` | **Moonshot V1 (8K)** ⚡ | Fast | 8K context optimized for speed | Fast response |
 
@@ -181,10 +183,70 @@ docker run -p 3000:3000 \
 - **Coding Excellence**: State-of-the-art performance in coding benchmarks
 - **Frontier Knowledge**: Superior performance in math, reasoning, and complex tasks
 
+## Available Tools for AI Models
+
+The application provides powerful tool calling capabilities, especially optimized for Kimi K2 models:
+
+### 🔍 **WebSearch Tool**
+- **Real-time Information**: Access current news, facts, and live data
+- **Search Integration**: Uses DuckDuckGo API for reliable results
+- **Smart Fallbacks**: Graceful handling when search services are unavailable
+- **Best for**: Current events, recent developments, fact-checking
+
+### 💻 **CodeRunner Tool**
+- **JavaScript & Python**: Execute code safely in sandboxed environment
+- **Data Analysis**: Perfect for calculations, algorithms, and data processing
+- **Security**: Isolated execution with content filtering
+- **Best for**: Programming tasks, complex calculations, data analysis
+
+### 🧮 **Calculator Tool**
+- **Mathematical Operations**: Arithmetic, algebra, trigonometry, statistics
+- **Multiple Operations**: Evaluate, solve, simplify, derivatives, integrals
+- **High Precision**: Reliable mathematical computations
+- **Best for**: Mathematical problems, formula evaluation
+
+### 📊 **TextAnalyzer Tool**
+- **Sentiment Analysis**: Understand emotional tone of text
+- **Keyword Extraction**: Identify important terms and themes
+- **Statistics**: Word count, readability metrics, language detection
+- **Best for**: Content analysis, writing improvement, text insights
+
+### 📈 **DataProcessor Tool**
+- **Format Support**: CSV, JSON, structured data processing
+- **Operations**: Parse, filter, sort, aggregate, visualize data
+- **Statistical Analysis**: Comprehensive data insights
+- **Best for**: Data manipulation, report generation, analytics
+
+### Tool Usage Tips
+- **K2 Models**: Automatically determine when and how to use tools
+- **Context Aware**: Tools work with your conversation context
+- **Chained Operations**: AI can use multiple tools in sequence
+- **Error Handling**: Robust error recovery and user feedback
+
+### Example Tool Usage
+
+**Web Search Example:**
+```
+"What's the latest news about Kimi K2 model releases?"
+→ AI uses WebSearch tool to find recent information
+```
+
+**Code Execution Example:**
+```
+"Calculate the Fibonacci sequence up to 100"
+→ AI uses CodeRunner tool to write and execute Python code
+```
+
+**Combined Tool Usage:**
+```
+"Search for current Bitcoin price and calculate ROI on a $1000 investment from last year"
+→ AI uses WebSearch for current price, then CodeRunner for calculations
+```
+
 **⭐ Recommended**:
+- `kimi-k2-turbo-preview` - Best performance with fastest speed
+- `kimi-k2-0905-preview` - Latest K2 features and enhanced capabilities
 - `kimi-latest` - Always gets the newest model automatically
-- `moonshot-v1-auto` - Intelligent model selection for your task
-- `kimi-k2-turbo-preview` - Fastest performance
 - `kimi-thinking-preview` - Complex reasoning tasks
 
 ## Deployment
