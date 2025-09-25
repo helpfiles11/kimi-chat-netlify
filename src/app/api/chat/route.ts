@@ -262,25 +262,145 @@ export async function POST(req: Request) {
       }
     ]
 
-    // Call the Kimi API to get a chat completion with tool support
-    const response = await openai.chat.completions.create({
-      model: selectedModel,               // Use the selected model from frontend
-      stream: true,                       // Enable streaming for real-time responses
-      messages: contextualMessages,       // Pass the conversation history with context to the AI
-      tools: tools,                       // Enable tool calling capabilities
-      temperature: 0.7                    // Balanced creativity for tool usage
-    })
+    // Try non-streaming first to see if tools are called
+    let completion
 
-    console.log('Received response from Kimi API, creating stream')
+    try {
+      completion = await openai.chat.completions.create({
+        model: selectedModel,               // Use the selected model from frontend
+        stream: false,                      // Start with non-streaming to handle tool calls
+        messages: contextualMessages,       // Pass the conversation history with context to the AI
+        tools: tools,                       // Enable tool calling capabilities
+        temperature: 0.7                    // Balanced creativity for tool usage
+      })
 
-    // Convert the response to a readable stream using Vercel AI SDK
-    // For now, handle tool calling at the model level rather than in the stream callback
-    // Type assertion to fix compatibility between OpenAI v4 and AI SDK v3
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const stream = OpenAIStream(response as any)
+      console.log('Received response from Kimi API')
+      const message = completion.choices[0].message
 
-    // Return a streaming response that the frontend can consume
-    return new StreamingTextResponse(stream)
+      // Check if the model wants to call tools
+      if (message.tool_calls && message.tool_calls.length > 0) {
+        console.log('Tool calls detected:', message.tool_calls)
+
+        // Execute each tool call
+        const toolMessages = []
+
+        for (const toolCall of message.tool_calls) {
+          const { name, arguments: args } = toolCall.function
+          console.log(`Executing tool: ${name} with arguments:`, args)
+
+          let toolResult
+
+          try {
+            switch (name) {
+              case 'WebSearch': {
+                const params = JSON.parse(args)
+                const searchResponse = await fetch(`${req.url.split('/api/chat')[0]}/api/tools/websearch`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(params)
+                })
+                toolResult = await searchResponse.json()
+                break
+              }
+
+              case 'CodeRunner': {
+                const params = JSON.parse(args)
+                const codeResponse = await fetch(`${req.url.split('/api/chat')[0]}/api/tools/code-runner`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(params)
+                })
+                toolResult = await codeResponse.json()
+                break
+              }
+
+              case 'Calculator': {
+                const params = JSON.parse(args)
+                const calcResponse = await fetch(`${req.url.split('/api/chat')[0]}/api/tools/calculator`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(params)
+                })
+                toolResult = await calcResponse.json()
+                break
+              }
+
+              default:
+                toolResult = { error: `Unknown tool: ${name}` }
+            }
+
+            console.log(`Tool ${name} executed successfully:`, toolResult)
+
+          } catch (error) {
+            console.error(`Error executing tool ${name}:`, error)
+            toolResult = {
+              error: `Failed to execute ${name}`,
+              details: error instanceof Error ? error.message : 'Unknown error'
+            }
+          }
+
+          // Add tool result message
+          toolMessages.push({
+            role: 'tool' as const,
+            tool_call_id: toolCall.id,
+            content: JSON.stringify(toolResult)
+          })
+        }
+
+        // Add the assistant's tool call message and tool results to conversation
+        const updatedMessages = [
+          ...contextualMessages,
+          message,
+          ...toolMessages
+        ]
+
+        // Get final response from model with tool results
+        const finalCompletion = await openai.chat.completions.create({
+          model: selectedModel,
+          stream: true,
+          messages: updatedMessages,
+          tools: tools,
+          temperature: 0.7
+        })
+
+        console.log('Tool execution completed, streaming final response')
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const stream = OpenAIStream(finalCompletion as any)
+        return new StreamingTextResponse(stream)
+
+      } else {
+        // No tools called, convert to streaming response
+        console.log('No tools called, providing direct response')
+
+        // Create a simple readable stream from the completion
+        const encoder = new TextEncoder()
+        const readable = new ReadableStream({
+          start(controller) {
+            const content = message.content || ''
+            controller.enqueue(encoder.encode(content))
+            controller.close()
+          }
+        })
+
+        return new StreamingTextResponse(readable)
+      }
+
+    } catch (error) {
+      console.error('Error in tool calling flow, falling back to streaming:', error)
+
+      // Fallback to streaming without tool calling
+      const streamingResponse = await openai.chat.completions.create({
+        model: selectedModel,
+        stream: true,
+        messages: contextualMessages,
+        tools: tools,
+        temperature: 0.7
+      })
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const stream = OpenAIStream(streamingResponse as any)
+      return new StreamingTextResponse(stream)
+    }
   } catch (error) {
     console.error('Error in chat API:', error)
     return new Response(

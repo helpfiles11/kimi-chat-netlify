@@ -223,24 +223,42 @@ The application provides powerful tool calling capabilities, especially optimize
 - **Chained Operations**: AI can use multiple tools in sequence
 - **Error Handling**: Robust error recovery and user feedback
 
+### Tool Calling Status
+- **✅ Tool Endpoints**: All tool APIs (WebSearch, CodeRunner, Calculator, etc.) are fully functional
+- **✅ Tool Definitions**: Properly configured in chat API following Moonshot AI specifications
+- **✅ Tool Execution**: Implemented proper tool calling based on official Moonshot AI documentation
+- **✅ Integration**: K2 models can now automatically execute tools and integrate results into responses
+
+### How Tool Calling Works
+1. **Automatic Detection**: K2 models analyze user requests and determine when tools are needed
+2. **Tool Selection**: Model selects appropriate tools (WebSearch, CodeRunner, Calculator, etc.)
+3. **Execution**: Server automatically executes selected tools with model-generated parameters
+4. **Integration**: Tool results are seamlessly integrated into the AI's response
+5. **Streaming**: Final enhanced response is streamed back to the user in real-time
+
 ### Example Tool Usage
 
 **Web Search Example:**
 ```
-"What's the latest news about Kimi K2 model releases?"
-→ AI uses WebSearch tool to find recent information
+User: "Search for the comet 3I atlas and tell me how big it is"
+→ AI automatically uses WebSearch tool
+→ Searches for current information about comet 3I/Borisov
+→ Integrates search results into comprehensive answer
 ```
 
 **Code Execution Example:**
 ```
-"Calculate the Fibonacci sequence up to 100"
+User: "Calculate the Fibonacci sequence up to 100"
 → AI uses CodeRunner tool to write and execute Python code
+→ Returns both the code and execution results
 ```
 
 **Combined Tool Usage:**
 ```
-"Search for current Bitcoin price and calculate ROI on a $1000 investment from last year"
-→ AI uses WebSearch for current price, then CodeRunner for calculations
+User: "Search for current Bitcoin price and calculate ROI on a $1000 investment from last year"
+→ AI uses WebSearch for current price
+→ Then uses CodeRunner for calculations
+→ Provides complete analysis with current data
 ```
 
 **⭐ Recommended**:
