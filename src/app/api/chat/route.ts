@@ -36,6 +36,7 @@ const openai = new OpenAI({
  * 4. Stream the response back to the frontend in real-time
  */
 export async function POST(req: Request) {
+  console.log('🚀 CHAT API CALLED - Enhanced Tool Calling Version')
   try {
     // Check if API key is properly configured at runtime
     if (!process.env.MOONSHOT_API_KEY) {
@@ -137,18 +138,13 @@ export async function POST(req: Request) {
       }
     }
 
-    console.log('Sending request to Kimi API with', contextualMessages.length, 'messages using model:', selectedModel)
-    if (context) {
-      console.log('Context provided:', context.slice(0, 100) + (context.length > 100 ? '...' : ''))
-    }
-
-    // Define available tools for AI to use
+    // Define available tools for AI to use - Format based on official Moonshot AI documentation
     const tools = [
       {
-        type: "function" as const,
+        type: "function",
         function: {
           name: "WebSearch",
-          description: "Search the web for current information, news, facts, and real-time data. Use this to find up-to-date information that may not be in your training data.",
+          description: "Search the web for current information, news, facts, and real-time data",
           parameters: {
             type: "object",
             properties: {
@@ -158,10 +154,7 @@ export async function POST(req: Request) {
               },
               max_results: {
                 type: "number",
-                minimum: 1,
-                maximum: 10,
-                default: 5,
-                description: "Maximum number of search results to return (1-10)"
+                description: "Maximum number of search results to return (default: 5)"
               }
             },
             required: ["query"]
@@ -169,10 +162,10 @@ export async function POST(req: Request) {
         }
       },
       {
-        type: "function" as const,
+        type: "function",
         function: {
           name: "CodeRunner",
-          description: "Execute Python or JavaScript code safely. Useful for calculations, data analysis, algorithms, and programming tasks.",
+          description: "A code executor that supports running Python and JavaScript code",
           parameters: {
             type: "object",
             properties: {
@@ -183,7 +176,7 @@ export async function POST(req: Request) {
               },
               code: {
                 type: "string",
-                description: "The code to execute"
+                description: "The code is written here"
               }
             },
             required: ["language", "code"]
@@ -261,6 +254,12 @@ export async function POST(req: Request) {
         }
       }
     ]
+
+    console.log('Sending request to Kimi API with', contextualMessages.length, 'messages using model:', selectedModel)
+    console.log('Tools configured:', tools.length, 'tools available')
+    if (context) {
+      console.log('Context provided:', context.slice(0, 100) + (context.length > 100 ? '...' : ''))
+    }
 
     // Try non-streaming first to see if tools are called
     let completion
