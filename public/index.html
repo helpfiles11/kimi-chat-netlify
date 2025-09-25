@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kimi Chat App - Open Source AI Chat with Web Search</title>
+    <meta name="description" content="Free, open-source ChatGPT alternative with real-time web search, file upload, and transparent token tracking. 93% cheaper than ChatGPT Plus!">
+    <meta name="keywords" content="AI chat, ChatGPT alternative, web search, open source, Moonshot AI, Kimi">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Kimi Chat App - Open Source AI Chat">
+    <meta property="og:description" content="ChatGPT alternative with superpowers - web search, file upload, 93% cheaper!">
+    <meta property="og:url" content="https://kimi-chat-netlify.netlify.app">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Kimi Chat App - Open Source AI Chat">
+    <meta property="twitter:description" content="ChatGPT alternative with superpowers - web search, file upload, 93% cheaper!">
+
+    <link rel="icon" href="/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'kimi-blue': '#3b82f6',
+                        'kimi-purple': '#8b5cf6'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200">
+    <!-- Navigation -->
+    <nav class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+        <div class="max-w-6xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gradient-to-r from-kimi-blue to-kimi-purple rounded-full flex items-center justify-center">
+                        <span class="text-white font-bold text-sm">K</span>
+                    </div>
+                    <h1 class="text-xl font-bold">Kimi Chat App</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="https://github.com/helpfiles11/kimi-chat-netlify"
+                       class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                    </a>
+                    <button onclick="toggleTheme()" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                        <span class="dark:hidden">🌙</span>
+                        <span class="hidden dark:inline">☀️</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="py-20 px-6">
+        <div class="max-w-6xl mx-auto text-center">
+            <div class="inline-flex items-center space-x-2 bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300 px-4 py-2 rounded-full text-sm font-medium mb-6">
+                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                <span>93% Cheaper Than ChatGPT Plus</span>
+            </div>
+
+            <h1 class="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-kimi-blue to-kimi-purple bg-clip-text text-transparent">
+                ChatGPT with Superpowers
+            </h1>
+
+            <p class="text-xl md:text-2xl text-gray-600 dark:text-gray-400 mb-8 max-w-3xl mx-auto">
+                Open-source AI chat that searches the web in real-time, handles your files,
+                and tracks every penny you spend. All you need is a Moonshot API key.
+            </p>
+
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+                <a href="https://kimi-chat.netlify.app"
+                   class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-kimi-blue to-kimi-purple text-white font-semibold rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+                    <span>Try It Free</span>
+                    <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                    </svg>
+                </a>
+                <a href="https://github.com/helpfiles11/kimi-chat-netlify"
+                   class="inline-flex items-center px-8 py-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-semibold rounded-lg border border-gray-300 dark:border-gray-600 hover:shadow-lg transition-all duration-200">
+                    <svg class="mr-2 w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                    View Source
+                </a>
+            </div>
+
+            <!-- Cost Comparison -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg max-w-2xl mx-auto border border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-semibold mb-4">💰 Money Talks - Why Pay More?</h3>
+                <div class="grid grid-cols-3 gap-4 text-center">
+                    <div class="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                        <div class="text-2xl font-bold text-red-600 dark:text-red-400">$20</div>
+                        <div class="text-sm text-red-600 dark:text-red-400">ChatGPT Plus</div>
+                        <div class="text-xs text-gray-500">per month</div>
+                    </div>
+                    <div class="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                        <div class="text-2xl font-bold text-red-600 dark:text-red-400">$20</div>
+                        <div class="text-sm text-red-600 dark:text-red-400">Claude Pro</div>
+                        <div class="text-xs text-gray-500">per month</div>
+                    </div>
+                    <div class="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border-2 border-green-500">
+                        <div class="text-2xl font-bold text-green-600 dark:text-green-400">$1.50</div>
+                        <div class="text-sm text-green-600 dark:text-green-400">Kimi Chat</div>
+                        <div class="text-xs text-gray-500">typical usage*</div>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-500 mt-3">*Based on ~10,000 tokens/day usage with Moonshot API</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-20 px-6 bg-white dark:bg-gray-800">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">What Makes It Special?</h2>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Web Search -->
+                <div class="p-6 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600">
+                    <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mb-4">
+                        <span class="text-2xl">🔍</span>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Real-Time Web Search</h3>
+                    <p class="text-gray-600 dark:text-gray-400">AI searches the internet instantly while typing. Get current news, facts, and information - not outdated training data.</p>
+                </div>
+
+                <!-- File Upload -->
+                <div class="p-6 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600">
+                    <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mb-4">
+                        <span class="text-2xl">📁</span>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">File Upload & Analysis</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Drop any file and chat about its contents. Perfect for analyzing documents, code, or data files.</p>
+                </div>
+
+                <!-- Calculator -->
+                <div class="p-6 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600">
+                    <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mb-4">
+                        <span class="text-2xl">🧮</span>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Instant Calculator</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Complex calculations solved instantly. No more switching between apps for math problems.</p>
+                </div>
+
+                <!-- Token Tracking -->
+                <div class="p-6 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600">
+                    <div class="w-12 h-12 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center mb-4">
+                        <span class="text-2xl">💰</span>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Transparent Costs</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Track every token and penny spent. No surprise bills, no hidden fees - just honest usage tracking.</p>
+                </div>
+
+                <!-- Multiple Models -->
+                <div class="p-6 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600">
+                    <div class="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center mb-4">
+                        <span class="text-2xl">🎯</span>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Multiple AI Models</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Choose from fast, smart, or extended context models. Pick the right tool for each task.</p>
+                </div>
+
+                <!-- Open Source -->
+                <div class="p-6 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600">
+                    <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center mb-4">
+                        <span class="text-2xl">🔓</span>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">100% Open Source</h3>
+                    <p class="text-gray-600 dark:text-gray-400">No vendor lock-in, no black boxes. Fork it, modify it, host it yourself. True freedom.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="py-20 px-6">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">How To Get Started</h2>
+
+            <div class="space-y-8">
+                <div class="flex items-start space-x-4">
+                    <div class="flex-shrink-0 w-8 h-8 bg-kimi-blue text-white rounded-full flex items-center justify-center font-bold">1</div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-2">Get Your Moonshot API Key</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-3">
+                            Visit <a href="https://platform.moonshot.ai" class="text-kimi-blue hover:underline">platform.moonshot.ai</a>
+                            and create a free account. You'll get API credits to start with - no upfront payment needed.
+                        </p>
+                        <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                            <p class="text-sm text-blue-700 dark:text-blue-300">
+                                💡 <strong>Pro Tip:</strong> Moonshot offers free trial credits, so you can test everything before spending a penny!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-start space-x-4">
+                    <div class="flex-shrink-0 w-8 h-8 bg-kimi-blue text-white rounded-full flex items-center justify-center font-bold">2</div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-2">Open Kimi Chat App</h3>
+                        <p class="text-gray-600 dark:text-gray-400">
+                            Visit our app, paste your API key, and you're ready to go. No downloads, no installations - just pure web-based convenience.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex items-start space-x-4">
+                    <div class="flex-shrink-0 w-8 h-8 bg-kimi-blue text-white rounded-full flex items-center justify-center font-bold">3</div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-2">Start Chatting with Superpowers</h3>
+                        <p class="text-gray-600 dark:text-gray-400">
+                            Ask questions, upload files, request web searches - watch as AI instantly accesses real-time information while you chat.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-12">
+                <a href="https://kimi-chat.netlify.app"
+                   class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-kimi-blue to-kimi-purple text-white font-semibold rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+                    Start Chatting Now
+                    <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technical Details -->
+    <section class="py-20 px-6 bg-white dark:bg-gray-800">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">Technical Magic</h2>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="space-y-6">
+                    <h3 class="text-xl font-semibold">🚀 Performance Features</h3>
+                    <ul class="space-y-3 text-gray-600 dark:text-gray-400">
+                        <li class="flex items-start space-x-2">
+                            <span class="text-green-500 font-bold">✓</span>
+                            <span>Streaming responses (like ChatGPT)</span>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                            <span class="text-green-500 font-bold">✓</span>
+                            <span>~1000ms search response times</span>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                            <span class="text-green-500 font-bold">✓</span>
+                            <span>Client-side intent detection</span>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                            <span class="text-green-500 font-bold">✓</span>
+                            <span>Global CDN deployment</span>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                            <span class="text-green-500 font-bold">✓</span>
+                            <span>Dark mode & mobile responsive</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="space-y-6">
+                    <h3 class="text-xl font-semibold">🛠 Open Source Stack</h3>
+                    <ul class="space-y-3 text-gray-600 dark:text-gray-400">
+                        <li class="flex items-start space-x-2">
+                            <span class="text-blue-500 font-bold">•</span>
+                            <span>Next.js 14 + TypeScript</span>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                            <span class="text-blue-500 font-bold">•</span>
+                            <span>Brave Search API integration</span>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                            <span class="text-blue-500 font-bold">•</span>
+                            <span>Moonshot AI (Kimi) models</span>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                            <span class="text-blue-500 font-bold">•</span>
+                            <span>Tailwind CSS styling</span>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                            <span class="text-blue-500 font-bold">•</span>
+                            <span>Netlify hosting & deployment</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 px-6 bg-gray-100 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center space-x-3 mb-4 md:mb-0">
+                    <div class="w-8 h-8 bg-gradient-to-r from-kimi-blue to-kimi-purple rounded-full flex items-center justify-center">
+                        <span class="text-white font-bold text-sm">K</span>
+                    </div>
+                    <span class="font-semibold">Kimi Chat App</span>
+                </div>
+
+                <div class="flex items-center space-x-6 text-sm text-gray-600 dark:text-gray-400">
+                    <a href="https://github.com/helpfiles11/kimi-chat-netlify" class="hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
+                        GitHub
+                    </a>
+                    <a href="https://platform.moonshot.ai" class="hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
+                        Get API Key
+                    </a>
+                    <span>Made with ❤️ for the open source community</span>
+                </div>
+            </div>
+
+            <div class="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700 text-center text-sm text-gray-500">
+                <p>© 2025 Kimi Chat App. Open source under MIT License.</p>
+                <p class="mt-2">Not affiliated with Moonshot AI. Moonshot and Kimi are trademarks of their respective owners.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark')
+            localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light')
+        }
+
+        // Load saved theme
+        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark')
+        }
+    </script>
+</body>
+</html>

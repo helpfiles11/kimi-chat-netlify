@@ -1,0 +1,45 @@
+# Netlify configuration for static project website
+# Deploy this as a separate site from the main app
+
+[build]
+  # Static site - no build needed
+  publish = "public"
+  command = "echo 'Static site ready'"
+
+[build.environment]
+  # No build environment needed for static HTML
+
+[[redirects]]
+  # Redirect root to the main app for users who want to try it
+  from = "/app"
+  to = "https://kimi-chat.netlify.app"
+  status = 302
+
+[[redirects]]
+  # Redirect API key info to Moonshot platform
+  from = "/api-key"
+  to = "https://platform.moonshot.ai"
+  status = 302
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=300"
+
+[[headers]]
+  for = "*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+
+[[headers]]
+  for = "*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
