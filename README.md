@@ -8,11 +8,7 @@ A modern, real-time AI chat application built with Next.js 15 and integrated wit
 
 ### Main Chat Interface
 ![Chat Interface](screenshots/chat-interface.png)
-*Real-time streaming responses with copy functionality and context system*
-
-### Features Overview
-![Features Overview](screenshots/features-overview.png)
-*Model selection, context input, and conversation management tools*
+*Real-time streaming responses with copy functionality, token consumption counter and context system*
 
 ## Features
 
