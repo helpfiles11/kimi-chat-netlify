@@ -331,28 +331,58 @@ export async function POST(req: Request) {
         // Special handling for incomplete tool calls (Partial Mode scenario)
         if (extractedToolCalls.length === 0 && message.content) {
           // Check for incomplete tool call patterns that might need completion
-          const incompletePattern = /\{"tool_calls":\s*\[\s*$/
-          if (incompletePattern.test(message.content)) {
-            console.log('Detected incomplete tool call - may be Partial Mode issue')
-            // Try a completion request to get the full tool call
+          // Pattern matches: "text:{"tool_calls":[" or just "{"tool_calls":["
+          const partialToolCallPattern = /\{"tool_calls":\s*\[.*$/
+          if (partialToolCallPattern.test(message.content)) {
+            console.log('Detected partial tool call pattern - attempting Partial Mode completion')
+
+            // Find where the tool call JSON starts
+            const jsonStartIndex = message.content.indexOf('{"tool_calls":')
+            const prefixText = message.content.substring(0, jsonStartIndex)
+            const partialJson = message.content.substring(jsonStartIndex)
+
+            console.log('Prefix text:', prefixText)
+            console.log('Partial JSON:', partialJson.slice(0, 100) + '...')
+
+            // Try a completion request to get the full tool call using Partial Mode
             try {
               const completionRequest = await openai.chat.completions.create({
                 model: selectedModel,
                 stream: false,
                 messages: [
                   ...contextualMessages,
-                  { role: 'assistant', content: message.content, partial: true }
+                  {
+                    role: 'assistant',
+                    content: partialJson,
+                    partial: true
+                  }
                 ],
                 tools: tools,
                 temperature: 0.7
               })
 
-              if (completionRequest.choices[0].message.tool_calls) {
-                console.log('Successfully completed partial tool call')
-                toolCallsToExecute = completionRequest.choices[0].message.tool_calls
+              const completedMessage = completionRequest.choices[0].message
+              if (completedMessage.tool_calls && completedMessage.tool_calls.length > 0) {
+                console.log('Successfully completed partial tool call via Partial Mode')
+                toolCallsToExecute = completedMessage.tool_calls
+                // Keep the prefix text for user display
+                message.content = prefixText.trim()
+              } else if (completedMessage.content) {
+                console.log('Partial completion returned content, attempting to parse')
+                // Try to parse the completed JSON
+                try {
+                  const fullJson = partialJson + completedMessage.content
+                  const completedData = JSON.parse(fullJson)
+                  if (completedData.tool_calls && completedData.tool_calls.length > 0) {
+                    toolCallsToExecute = completedData.tool_calls
+                    message.content = prefixText.trim()
+                  }
+                } catch (parseError) {
+                  console.log('Failed to parse completed JSON:', parseError)
+                }
               }
             } catch (partialError) {
-              console.log('Partial completion failed:', partialError)
+              console.log('Partial Mode completion failed:', partialError)
             }
           }
         }
