@@ -141,7 +141,7 @@ export async function POST(req: Request) {
     // Define available tools for AI to use - Format based on official Moonshot AI documentation
     const tools = [
       {
-        type: "function",
+        type: "function" as const,
         function: {
           name: "WebSearch",
           description: "Search the web for current information, news, facts, and real-time data",
@@ -162,7 +162,7 @@ export async function POST(req: Request) {
         }
       },
       {
-        type: "function",
+        type: "function" as const,
         function: {
           name: "CodeRunner",
           description: "A code executor that supports running Python and JavaScript code",
@@ -262,15 +262,17 @@ export async function POST(req: Request) {
     }
 
     // Try non-streaming first to see if tools are called
+    // Important: Avoid mixing Partial Mode with streaming when tools are involved
     let completion
 
     try {
       completion = await openai.chat.completions.create({
         model: selectedModel,               // Use the selected model from frontend
-        stream: false,                      // Start with non-streaming to handle tool calls
+        stream: false,                      // Start with non-streaming to handle tool calls properly
         messages: contextualMessages,       // Pass the conversation history with context to the AI
         tools: tools,                       // Enable tool calling capabilities
-        temperature: 0.7                    // Balanced creativity for tool usage
+        temperature: 0.7,                   // Balanced creativity for tool usage
+        // Explicitly avoid response_format=json_object when using tools to prevent Partial Mode conflicts
       })
 
       console.log('Received response from Kimi API')
@@ -279,9 +281,10 @@ export async function POST(req: Request) {
       // Check if the model wants to call tools (standard OpenAI format)
       let toolCallsToExecute = message.tool_calls || []
 
-      // Also check if tool calls are embedded in the content as text (Moonshot behavior)
+      // Also check if tool calls are embedded in the content as text (Moonshot Partial Mode behavior)
+      // The models might be using Partial Mode to generate tool call JSON
       if (toolCallsToExecute.length === 0 && message.content) {
-        console.log('Checking content for tool calls:', message.content.slice(0, 200) + '...')
+        console.log('Checking content for tool calls (potential Partial Mode):', message.content.slice(0, 200) + '...')
 
         // Try different patterns to extract tool calls
         let extractedToolCalls = []
@@ -321,6 +324,35 @@ export async function POST(req: Request) {
               } catch (parseError) {
                 console.log('Individual tool call parse failed:', parseError)
               }
+            }
+          }
+        }
+
+        // Special handling for incomplete tool calls (Partial Mode scenario)
+        if (extractedToolCalls.length === 0 && message.content) {
+          // Check for incomplete tool call patterns that might need completion
+          const incompletePattern = /\{"tool_calls":\s*\[\s*$/
+          if (incompletePattern.test(message.content)) {
+            console.log('Detected incomplete tool call - may be Partial Mode issue')
+            // Try a completion request to get the full tool call
+            try {
+              const completionRequest = await openai.chat.completions.create({
+                model: selectedModel,
+                stream: false,
+                messages: [
+                  ...contextualMessages,
+                  { role: 'assistant', content: message.content, partial: true }
+                ],
+                tools: tools,
+                temperature: 0.7
+              })
+
+              if (completionRequest.choices[0].message.tool_calls) {
+                console.log('Successfully completed partial tool call')
+                toolCallsToExecute = completionRequest.choices[0].message.tool_calls
+              }
+            } catch (partialError) {
+              console.log('Partial completion failed:', partialError)
             }
           }
         }
