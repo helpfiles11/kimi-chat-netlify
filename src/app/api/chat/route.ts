@@ -365,20 +365,41 @@ export async function POST(req: Request) {
               if (completedMessage.tool_calls && completedMessage.tool_calls.length > 0) {
                 console.log('Successfully completed partial tool call via Partial Mode')
                 toolCallsToExecute = completedMessage.tool_calls
-                // Keep the prefix text for user display
+                // Keep the prefix text for user display (API doesn't include leading text)
                 message.content = prefixText.trim()
               } else if (completedMessage.content) {
                 console.log('Partial completion returned content, attempting to parse')
-                // Try to parse the completed JSON
+                console.log('Completion content:', completedMessage.content.slice(0, 200) + '...')
+
+                // Important: API response doesn't include leading text, need to manually concatenate
                 try {
                   const fullJson = partialJson + completedMessage.content
+                  console.log('Full JSON to parse:', fullJson.slice(0, 200) + '...')
+
                   const completedData = JSON.parse(fullJson)
                   if (completedData.tool_calls && completedData.tool_calls.length > 0) {
+                    console.log('Successfully parsed completed tool calls')
                     toolCallsToExecute = completedData.tool_calls
+                    // Keep only the prefix text for user display
                     message.content = prefixText.trim()
                   }
                 } catch (parseError) {
                   console.log('Failed to parse completed JSON:', parseError)
+                  // If JSON parsing fails, try to extract tool calls from the completion content directly
+                  try {
+                    // The completion might return just the array part: [{"id":"..."}]
+                    const toolCallsMatch = completedMessage.content.match(/\[[\s\S]*\]/)
+                    if (toolCallsMatch) {
+                      const toolCallsArray = JSON.parse(toolCallsMatch[0])
+                      if (Array.isArray(toolCallsArray) && toolCallsArray.length > 0) {
+                        console.log('Extracted tool calls from completion array')
+                        toolCallsToExecute = toolCallsArray
+                        message.content = prefixText.trim()
+                      }
+                    }
+                  } catch (arrayParseError) {
+                    console.log('Failed to parse as array:', arrayParseError)
+                  }
                 }
               }
             } catch (partialError) {

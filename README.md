@@ -228,13 +228,61 @@ The application provides powerful tool calling capabilities, especially optimize
 - **✅ Tool Definitions**: Properly configured in chat API following Moonshot AI specifications
 - **✅ Tool Execution**: Implemented proper tool calling based on official Moonshot AI documentation
 - **✅ Integration**: K2 models can now automatically execute tools and integrate results into responses
+- **✅ Partial Mode Support**: Advanced implementation handles Moonshot AI's unique Partial Mode architecture
 
 ### How Tool Calling Works
 1. **Automatic Detection**: K2 models analyze user requests and determine when tools are needed
 2. **Tool Selection**: Model selects appropriate tools (WebSearch, CodeRunner, Calculator, etc.)
-3. **Execution**: Server automatically executes selected tools with model-generated parameters
-4. **Integration**: Tool results are seamlessly integrated into the AI's response
-5. **Streaming**: Final enhanced response is streamed back to the user in real-time
+3. **Partial Mode Processing**: Moonshot AI uses Partial Mode for tool calling - models generate incomplete tool calls expecting completion
+4. **Completion & Execution**: Server completes partial tool calls using `partial: true` and executes tools
+5. **Integration**: Tool results are seamlessly integrated into the AI's response
+6. **Streaming**: Final enhanced response is streamed back to the user in real-time
+
+### Partial Mode Implementation
+
+Moonshot AI uses a unique **Partial Mode** architecture for tool calling that differs from OpenAI's approach:
+
+#### Key Differences
+- **Partial Completion**: K2 models generate incomplete JSON tool calls in the content field
+- **Manual Concatenation**: API responses don't include leading text - requires manual concatenation
+- **Completion Request**: Uses `partial: true` parameter to complete interrupted tool calls
+- **Name Field Support**: The `name` field is treated as part of the output prefix in Partial Mode
+
+#### Technical Implementation
+```typescript
+// 1. Detect partial tool calls in model response
+const partialToolCallMatch = content.match(/{"tool_calls":\s*\[\s*{[^}]*$/);
+
+// 2. Separate prefix text from partial JSON
+const prefixText = content.slice(0, partialToolCallMatch.index).trim();
+const partialJson = content.slice(partialToolCallMatch.index);
+
+// 3. Complete using Partial Mode
+const completionRequest = await openai.chat.completions.create({
+  model: selectedModel,
+  stream: false,
+  messages: [
+    ...contextualMessages,
+    {
+      role: 'assistant',
+      content: partialJson,
+      partial: true // Key parameter for Partial Mode
+    }
+  ],
+  tools: tools,
+  temperature: 0.7
+});
+
+// 4. Manual concatenation (API doesn't include leading text)
+const fullJson = partialJson + completedMessage.content;
+const parsedToolCalls = JSON.parse(fullJson);
+```
+
+#### Benefits
+- **Seamless Integration**: Works naturally with K2 model behavior
+- **Robust Parsing**: Handles multiple tool call formats and edge cases
+- **Error Recovery**: Comprehensive fallback strategies for parsing failures
+- **Clean User Experience**: Users see natural responses while tools execute in background
 
 ### Example Tool Usage
 
