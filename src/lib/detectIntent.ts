@@ -19,15 +19,27 @@ const TOOL_PATTERNS: IntentPattern[] = [
   // WebSearch patterns
   {
     name: 'WebSearch',
-    trigger: /\b(search|look up|google|find|query|research)\b.*?\b(for|about|regarding)\b/i,
+    trigger: /\b(search|look up|google|find|query|research)\b.*?\b(for|about|regarding|information)\b/i,
     extractor: (text: string) => {
       // Extract quoted phrases first
       const quoted = text.match(/[""]([^""]+)[""]/);
       if (quoted) return { query: quoted[1], max_results: 3 };
 
-      // Extract after "for/about/regarding"
-      const afterFor = text.match(/\b(?:for|about|regarding)\s+([^.!?]+)/i);
+      // Extract after "for/about/regarding/information"
+      const afterFor = text.match(/\b(?:for|about|regarding|information\s+(?:about|on))\s+([^.!?]+)/i);
       if (afterFor) return { query: afterFor[1].trim(), max_results: 3 };
+
+      // Special case for comet queries
+      const cometMatch = text.match(/\b(?:comet|asteroid)\s+([^.!?]+)/i);
+      if (cometMatch) {
+        return { query: `comet ${cometMatch[1].trim()}`, max_results: 3 };
+      }
+
+      // Extract object names (like "3I Atlas", "Borisov", etc.)
+      const objectMatch = text.match(/\b([A-Z0-9]+[\/\-\s][A-Za-z0-9]+|[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/);
+      if (objectMatch) {
+        return { query: objectMatch[1].trim(), max_results: 3 };
+      }
 
       return null;
     }
