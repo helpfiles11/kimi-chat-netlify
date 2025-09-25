@@ -9,7 +9,7 @@
 - **Iterative Improvement**: Learn from production issues and optimize continuously
 
 ### Key Technical Discoveries
-- **WebSearch Optimization** (Sept 2025): Removed SearXNG complexity, focused on Brave Search API with gzip compression and 6-second timeouts - reduced response times from 900ms+ to consistent ~1000ms
+- **WebSearch Optimization** (Sept 2025): Focus on Brave Search API with gzip compression and 6-second timeouts - reduced response times from 900ms+ to consistent ~1000ms
 - **Netlify Edge Function Limits**: 10-second timeout requires careful API orchestration
 - **Tool System Design**: Client-side intent detection enables instant tool execution during AI streaming
 - **Error Handling Strategy**: Comprehensive logging and intelligent fallbacks improve user experience
@@ -25,11 +25,6 @@
   - Self-hosted privacy and control
 - **Implementation**: Configure SearXNG for API access, deploy on OCI free tier
 - **Status**: Initial integration attempted, requires configuration tuning
-
-### Multi-Vendor Search Architecture
-- **Description**: Parallel search from multiple vendors (SearXNG + Brave + Bing)
-- **Benefits**: Faster response times, redundancy, comprehensive coverage
-- **Status**: Architecture designed, ready for implementation
 
 ## 🛠️ **Tool System Enhancements**
 
@@ -171,7 +166,7 @@
 
 ### Plugin System
 - **Description**: Allow third-party developers to create custom tools
-- **Features**: Plugin marketplace, sandboxed execution, API standards
+- **Features**: sandboxed execution, API standards
 
 ## 📈 **Business Features**
 
