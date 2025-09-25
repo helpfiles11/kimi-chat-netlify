@@ -1,10 +1,11 @@
 'use client'
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 // In AI SDK v3, useChat is available from 'ai/react'
 import { useChat } from 'ai/react'
 import CopyButton from '../components/CopyButton'
 import FileUpload from '../components/FileUpload'
 import UsageInfo from '../components/UsageInfo'
+import { detectIntent, shouldCallTool, type ToolCall } from '../lib/detectIntent'
 
 /**
  * Main Chat Component
@@ -111,6 +112,12 @@ export default function Chat() {
   const [tokenEstimate, setTokenEstimate] = useState<{total_tokens: number, estimated_cost?: number} | null>(null)
   const [estimatingTokens, setEstimatingTokens] = useState(false)
 
+  // Tool execution tracking
+  const [executingTools, setExecutingTools] = useState<Set<string>>(new Set())
+  const [toolResults, setToolResults] = useState<Map<string, unknown>>(new Map())
+  const alreadyCalledTools = useRef<Set<string>>(new Set())
+  const currentResponse = useRef<string>('')
+
   // Handler for file upload
   const handleFileUpload = (content: string, filename: string) => {
     const fileInfo = { name: filename, content }
@@ -125,6 +132,50 @@ export default function Chat() {
     setContext(prev => prev + fileContext)
   }
 
+  // Execute tool based on detected intent
+  const executeTool = useCallback(async (toolCall: ToolCall, msgId?: string) => {
+    const toolKey = `${toolCall.name}_${JSON.stringify(toolCall.arguments)}`
+
+    if (!shouldCallTool(toolCall, alreadyCalledTools.current)) {
+      console.log(`Tool ${toolCall.name} already called, skipping`)
+      return
+    }
+
+    console.log(`Executing tool: ${toolCall.name}`, toolCall.arguments)
+
+    setExecutingTools(prev => new Set(prev).add(toolKey))
+
+    try {
+      const response = await fetch('/api/execTool', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: toolCall.name,
+          arguments: toolCall.arguments,
+          id: toolCall.id,
+          msgId
+        })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        setToolResults(prev => new Map(prev).set(toolKey, result))
+        console.log(`Tool ${toolCall.name} completed:`, result)
+      } else {
+        console.error(`Tool ${toolCall.name} failed:`, result.error)
+      }
+    } catch (error) {
+      console.error(`Error executing tool ${toolCall.name}:`, error)
+    } finally {
+      setExecutingTools(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(toolKey)
+        return newSet
+      })
+    }
+  }, [])
+
   // Load context from localStorage on component mount
   useEffect(() => {
     const savedContext = localStorage.getItem('kimi-chat-context')
@@ -132,6 +183,7 @@ export default function Chat() {
       setContext(savedContext)
     }
   }, [])
+
 
   // Save context to localStorage whenever it changes
   useEffect(() => {
@@ -180,14 +232,56 @@ export default function Chat() {
     },
     onFinish: (message) => {
       console.log('Chat finished:', message)
+      // Reset tracking for next message
+      currentResponse.current = ''
+      alreadyCalledTools.current.clear()
     },
     onResponse: (response) => {
       console.log('Chat response received:', response.status)
       if (!response.ok) {
         console.error('Chat response not ok:', response.status, response.statusText)
       }
+    },
+    experimental_onFunctionCall: async (toolCall) => {
+      // This is for standard function calling, but we're using client-side intent detection instead
+      console.log('Function call detected (standard):', toolCall)
+      return undefined // Let the UI handle display
     }
   })
+
+  // Streaming intent detection - monitor AI responses for tool usage
+  useEffect(() => {
+    if (messages.length === 0) return
+
+    const lastMessage = messages[messages.length - 1]
+
+    // Only process assistant messages
+    if (lastMessage.role !== 'assistant' || !lastMessage.content) return
+
+    const currentContent = lastMessage.content
+    const newChunk = currentContent.slice(currentResponse.current.length)
+
+    if (newChunk.length > 0) {
+      // Update our tracking
+      currentResponse.current = currentContent
+
+      // Detect intent in the new chunk
+      const toolIntent = detectIntent(newChunk)
+
+      if (toolIntent) {
+        console.log('Intent detected in streaming response:', toolIntent)
+        // Execute tool immediately while AI is still "typing"
+        executeTool(toolIntent, lastMessage.id)
+      }
+
+      // Also check full response for complete patterns
+      const fullIntent = detectIntent(currentContent)
+      if (fullIntent && fullIntent.name !== toolIntent?.name) {
+        console.log('Full response intent detected:', fullIntent)
+        executeTool(fullIntent, lastMessage.id)
+      }
+    }
+  }, [messages, executeTool])
 
   // Token estimation function
   const estimateTokens = useCallback(async (newMessage: string) => {
@@ -440,6 +534,72 @@ export default function Chat() {
             </div>
             {/* Show the message content, preserving line breaks with whitespace-pre-wrap */}
             <div className="whitespace-pre-wrap text-gray-800 dark:text-gray-200 leading-relaxed">{m.content}</div>
+
+            {/* Tool execution results */}
+            {m.role === 'assistant' && Array.from(toolResults.entries()).some(([, result]) =>
+              (result as {msgId?: string}).msgId === m.id
+            ) && (
+              <div className="mt-3 space-y-2">
+                {Array.from(toolResults.entries())
+                  .filter(([, result]) => (result as {msgId?: string}).msgId === m.id)
+                  .map(([toolKey, result]) => {
+                    const toolResult = result as {
+                      msgId?: string
+                      toolCall: { name: string; arguments: Record<string, unknown> }
+                      success: boolean
+                      result?: { results?: Array<{ title: string; snippet: string }> }
+                      error?: string
+                      executionTime: number
+                    }
+                    return (
+                    <div key={toolKey} className="p-3 bg-gray-50 dark:bg-gray-600 rounded-lg border-l-4 border-blue-500">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                          Tool: {toolResult.toolCall.name}
+                        </span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          {toolResult.executionTime}ms
+                        </span>
+                      </div>
+                      {toolResult.success ? (
+                        <div className="text-sm text-gray-700 dark:text-gray-300">
+                          {toolResult.toolCall.name === 'WebSearch' && toolResult.result?.results && (
+                            <div>
+                              <p className="mb-2"><strong>Search Results:</strong></p>
+                              {toolResult.result.results.slice(0, 3).map((res, idx: number) => (
+                                <div key={idx} className="mb-2 p-2 bg-white dark:bg-gray-700 rounded">
+                                  <div className="font-medium text-blue-600">{res.title}</div>
+                                  <div className="text-xs text-gray-500 mt-1">{res.snippet}</div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-sm text-red-600 dark:text-red-400">
+                          Error: {toolResult.error}
+                        </div>
+                      )}
+                    </div>
+                  )})}
+              </div>
+            )}
+
+            {/* Show executing tools */}
+            {m.role === 'assistant' && executingTools.size > 0 && (
+              <div className="mt-3 space-y-2">
+                {Array.from(executingTools).map(toolKey => (
+                  <div key={toolKey} className="p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded border-l-4 border-yellow-400">
+                    <div className="flex items-center gap-2">
+                      <div className="animate-spin w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full"></div>
+                      <span className="text-sm text-yellow-700 dark:text-yellow-300">
+                        Executing {toolKey.split('_')[0]}...
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         ))}
         {isLoading && (
