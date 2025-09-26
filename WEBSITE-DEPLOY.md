@@ -16,7 +16,30 @@ To deploy the static project website as a separate Netlify site:
 2. Set build settings:
    - **Build command**: `echo 'Static site ready'`
    - **Publish directory**: `public`
-   - **Config file**: `netlify-website.toml`
+   - **Config file**: `netlify-static.toml`
+
+## ⚙️ Configuration Files
+
+This repository contains two Netlify configuration files:
+
+### `netlify.toml` - Main Next.js Application
+- **Purpose**: Deploys the full Kimi Chat application with password login
+- **Build**: `npm run build` (Next.js build process)
+- **Publish**: `.next` (Next.js output directory)
+- **Site**: `kimi-chat.netlify.app`
+
+### `netlify-static.toml` - Static Project Website
+- **Purpose**: Deploys only the project information website
+- **Build**: `echo 'Static site ready'` (no build needed)
+- **Publish**: `public` (static HTML files)
+- **Site**: `kimi-chat-info.netlify.app`
+
+## 🔧 Troubleshooting
+
+If your main app shows "Static site ready" error:
+1. Verify you're using `netlify.toml` (not `netlify-static.toml`)
+2. Check that build command is `npm run build`
+3. Ensure publish directory is `.next`
 
 ## 📁 Website Structure
 
