@@ -255,18 +255,20 @@ export async function POST(req: Request) {
 
         if (scrapeResponse.ok) {
           const scrapeData = await scrapeResponse.json()
-          if (scrapeData.success) {
-            // Add scraped content to the first result
+          if (scrapeData.success && scrapeData.content && scrapeData.title) {
+            // Add scraped content to the first result with validation
             searchResults[0].scraped_content = {
-              title: scrapeData.title,
-              content: scrapeData.content,
-              word_count: scrapeData.word_count,
-              scraped_at: scrapeData.scraped_at
+              title: String(scrapeData.title || 'No title'),
+              content: String(scrapeData.content || ''),
+              word_count: Number(scrapeData.word_count || 0),
+              scraped_at: String(scrapeData.scraped_at || new Date().toISOString())
             }
-            logger.logSuccess(`Successfully scraped ${scrapeData.word_count} words from top result`)
+            logger.logSuccess(`Successfully scraped ${scrapeData.word_count || 0} words from top result`)
           } else {
-            logger.logWarning(`Failed to scrape top result: ${scrapeData.error}`)
+            logger.logWarning(`Failed to scrape top result: ${scrapeData.error || 'No content extracted'}`)
           }
+        } else {
+          logger.logWarning(`Scraping request failed: ${scrapeResponse.status} ${scrapeResponse.statusText}`)
         }
       } catch (scrapeError) {
         // Don't fail the whole search if scraping fails

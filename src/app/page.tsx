@@ -534,19 +534,19 @@ export default function Chat() {
                                   <div className="text-xs text-gray-400 dark:text-gray-500 mt-1 truncate">{res.url}</div>
 
                                   {/* Show scraped content if available (first result only) */}
-                                  {idx === 0 && res.scraped_content && (
+                                  {idx === 0 && res.scraped_content && res.scraped_content.content && (
                                     <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                                       <div className="flex items-center justify-between mb-2">
                                         <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
                                           📄 Page Content Analysis
                                         </span>
                                         <span className="text-xs text-blue-600 dark:text-blue-400">
-                                          {res.scraped_content.word_count} words
+                                          {res.scraped_content.word_count || 0} words
                                         </span>
                                       </div>
                                       <div className="text-sm text-gray-700 dark:text-gray-300 max-h-32 overflow-y-auto">
-                                        {res.scraped_content.content.substring(0, 500)}
-                                        {res.scraped_content.content.length > 500 && '...'}
+                                        {res.scraped_content.content?.substring(0, 500) || 'Content not available'}
+                                        {res.scraped_content.content && res.scraped_content.content.length > 500 && '...'}
                                       </div>
                                     </div>
                                   )}
