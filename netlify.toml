@@ -1,6 +1,25 @@
+# Netlify configuration for static website
 [build]
-  command = "npm run build"
-  publish = ".next"
+  command = "echo 'Static site ready'"
+  publish = "public"
 
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
+# Headers for security
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[redirects]]
+  # Redirect to GitHub repository for users who want to deploy the app
+  from = "/app"
+  to = "https://github.com/helpfiles11/kimi-chat-netlify"
+  status = 302
+
+[[redirects]]
+  # Redirect API key info to Moonshot platform
+  from = "/api-key"
+  to = "https://platform.moonshot.ai"
+  status = 302
