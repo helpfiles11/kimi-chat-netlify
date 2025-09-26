@@ -1,7 +1,9 @@
-# Netlify configuration for Kimi Chat Next.js application
+# Netlify configuration for static website (kimi-chat-info)
+# Use this file for deploying just the public/ folder as a static site
+
 [build]
-  command = "npm run build"
-  publish = ".next"
+  command = "echo 'Static site ready'"
+  publish = "public"
 
 # Headers for security
 [[headers]]
@@ -11,6 +13,12 @@
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[redirects]]
+  # Redirect to GitHub repository for users who want to deploy the app
+  from = "/app"
+  to = "https://github.com/helpfiles11/kimi-chat-netlify"
+  status = 302
 
 [[redirects]]
   # Redirect API key info to Moonshot platform
