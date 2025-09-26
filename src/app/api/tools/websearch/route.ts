@@ -9,6 +9,18 @@
  * Returns: { success: boolean, results?: SearchResult[], error?: string }
  */
 
+import {
+  createErrorResponse,
+  createSuccessResponse,
+  validateEnvVar,
+  validateRequestBody,
+  validateStringField,
+  validateNumericField,
+  ApiLogger,
+  handleExternalApiError,
+  fetchWithTimeout
+} from '../../../../lib/api-utils'
+
 interface WebSearchRequest {
   query: string
   max_results?: number
@@ -22,62 +34,53 @@ interface SearchResult {
 }
 
 export async function POST(req: Request) {
+  const logger = new ApiLogger('WebSearch Tool')
+
+  let query = ''
+
   try {
-    const body: WebSearchRequest = await req.json()
-    const { query, max_results = 5 } = body
+    const body = await req.json()
 
-    // Validate input
-    if (!query || typeof query !== 'string' || query.trim().length === 0) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'Missing or invalid query parameter'
-        }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
+    // Validate request structure
+    const bodyValidation = validateRequestBody(body, ['query'])
+    if (bodyValidation) return bodyValidation
+
+    const { query: queryParam, max_results = 5 } = body as WebSearchRequest
+    query = queryParam
+
+    // Validate query field
+    const queryValidation = validateStringField(query, 'query', 1, 400)
+    if (queryValidation) return queryValidation
+
+    // Additional validation: Check word count (50 words max per Brave API spec)
+    const wordCount = query.trim().split(/\s+/).length
+    if (wordCount > 50) {
+      return createErrorResponse(
+        'Query has too many words. Maximum 50 words allowed per Brave API specification.',
+        400
       )
     }
 
-    // Security: Limit query length and results count
-    if (query.length > 500) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'Query too long. Maximum 500 characters allowed.'
-        }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      )
-    }
+    // Validate max_results
+    const resultsValidation = validateNumericField(max_results, 'max_results', 1, 20)
+    if (resultsValidation) return resultsValidation
 
-    if (max_results < 1 || max_results > 10) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'max_results must be between 1 and 10'
-        }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      )
-    }
+    // Validate API key
+    const apiKeyValidation = validateEnvVar('BRAVE_SEARCH_API_KEY', process.env.BRAVE_SEARCH_API_KEY)
+    if (apiKeyValidation) return apiKeyValidation
 
-    console.log(`Performing web search for: "${query}" (max ${max_results} results)`)
+    logger.logSuccess(`Processing query: "${query}" (max ${max_results} results)`)
 
-    const startTime = Date.now()
     let searchResults: SearchResult[] = []
 
     try {
-      // Use Brave Search API for reliable, fast results
-      const braveApiKey = process.env.BRAVE_SEARCH_API_KEY
 
-      if (!braveApiKey) {
-        throw new Error('BRAVE_SEARCH_API_KEY not configured')
-      }
-
-      console.log('Using Brave Search API')
-
-      // Build optimized Brave Search request
+      // Build optimized Brave Search request with 2025-compliant parameters
       const braveUrl = new URL('https://api.search.brave.com/res/v1/web/search')
       braveUrl.searchParams.append('q', query)
-      braveUrl.searchParams.append('count', max_results.toString())
-      // Add search optimization parameters
+      braveUrl.searchParams.append('count', Math.min(max_results, 20).toString()) // Max 20 per API spec
+
+      // Add search optimization parameters (2025 API compliant)
       braveUrl.searchParams.append('search_lang', 'en')
       braveUrl.searchParams.append('ui_lang', 'en-US')
       braveUrl.searchParams.append('country', 'US')
@@ -85,20 +88,21 @@ export async function POST(req: Request) {
       braveUrl.searchParams.append('text_decorations', 'false') // Clean snippets without highlighting
       braveUrl.searchParams.append('extra_snippets', 'true')    // More context per result
       braveUrl.searchParams.append('spellcheck', 'true')        // Auto-correct queries
+      braveUrl.searchParams.append('summary', 'false')          // Disable AI summary for faster results
 
-      const response = await fetch(braveUrl, {
+      const response = await fetchWithTimeout(braveUrl.toString(), {
         method: 'GET',
         headers: {
-          'X-Subscription-Token': braveApiKey,
+          'X-Subscription-Token': process.env.BRAVE_SEARCH_API_KEY!,
           'Accept': 'application/json',
-          'Accept-Encoding': 'gzip'
-        },
-        signal: AbortSignal.timeout(6000)
-      })
+          'Accept-Encoding': 'gzip',
+          'User-Agent': 'Kimi-Chat-App/1.0' // Good practice for API identification
+        }
+      }, 10000)
 
       if (!response.ok) {
         const errorText = await response.text()
-        throw new Error(`Brave API error: ${response.status} ${response.statusText} - ${errorText}`)
+        handleExternalApiError('Brave Search API', response, errorText)
       }
 
       const data = await response.json()
@@ -115,25 +119,37 @@ export async function POST(req: Request) {
 
       console.log('Brave Search response keys:', Object.keys(data))
 
-      // Extract web search results with detailed logging
+      // Enhanced response parsing with better validation
+      if (!data || typeof data !== 'object') {
+        throw new Error('Invalid response format: Expected JSON object from Brave Search API')
+      }
+
+      // Check for API error messages in response
+      if (data.error || data.message) {
+        throw new Error(`Brave API returned error: ${data.error || data.message}`)
+      }
+
+      // Extract web search results with robust error handling
       if (data.web && data.web.results && Array.isArray(data.web.results)) {
         console.log(`Brave returned ${data.web.results.length} raw results`)
 
         const results: SearchResult[] = []
 
         for (const item of data.web.results.slice(0, max_results)) {
-          if (item.title && item.url && item.description) {
+          // More flexible validation - allow partial results
+          if (item && typeof item === 'object' && item.title && item.url) {
             results.push({
-              title: item.title,
-              url: item.url,
-              snippet: item.description,
-              source: item.profile?.name || 'Brave Search'
+              title: String(item.title).trim(),
+              url: String(item.url).trim(),
+              snippet: String(item.description || item.snippet || '').trim() || 'No description available',
+              source: String(item.profile?.name || item.meta_url?.hostname || 'Brave Search').trim()
             })
           } else {
             console.log('Skipping incomplete result:', {
-              hasTitle: !!item.title,
-              hasUrl: !!item.url,
-              hasDescription: !!item.description
+              hasTitle: !!item?.title,
+              hasUrl: !!item?.url,
+              hasDescription: !!(item?.description || item?.snippet),
+              itemKeys: item ? Object.keys(item) : []
             })
           }
         }
@@ -141,14 +157,16 @@ export async function POST(req: Request) {
         searchResults = results
         console.log(`Brave Search processed ${searchResults.length} valid results`)
 
-        if (searchResults.length === 0) {
-          console.warn('No valid results after processing. Sample data:',
-            JSON.stringify(data.web.results?.[0] || {}, null, 2))
+        // Only warn if no results and we expected some
+        if (searchResults.length === 0 && data.web.results.length > 0) {
+          console.warn('No valid results after processing. First raw result:',
+            JSON.stringify(data.web.results[0] || {}, null, 2))
         }
       } else {
-        console.error('Unexpected Brave Search response structure:',
-          JSON.stringify(Object.keys(data), null, 2))
-        throw new Error('Invalid response format from Brave Search API')
+        console.error('Unexpected Brave Search response structure. Available keys:',
+          Object.keys(data))
+        console.error('Response preview:', JSON.stringify(data, null, 2).slice(0, 500))
+        throw new Error('Invalid response format: Missing web.results array from Brave Search API')
       }
 
     } catch (apiError) {
@@ -191,31 +209,21 @@ export async function POST(req: Request) {
       }
     }
 
-    const searchTime = Date.now() - startTime
-    console.log(`Web search completed in ${searchTime}ms, found ${searchResults.length} results`)
+    logger.logSuccess(`Found ${searchResults.length} results for: "${query}"`)
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        results: searchResults,
-        query: query.trim(),
-        search_time_ms: searchTime
-      }),
-      {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' }
-      }
-    )
+    return createSuccessResponse({
+      results: searchResults,
+      query: query.trim(),
+      search_provider: 'Brave Search API',
+      results_count: searchResults.length
+    })
 
   } catch (error) {
-    console.error('Error in websearch API:', error)
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: 'Internal server error during web search',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    logger.logError(error, `Query: "${query}"`)
+    return createErrorResponse(
+      'Internal server error during web search',
+      500,
+      error instanceof Error ? error.message : 'Unknown error'
     )
   }
 }

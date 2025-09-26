@@ -4,6 +4,8 @@
 
 A modern, real-time AI chat application built with Next.js 15 and integrated with Kimi AI (Moonshot AI). Features streaming responses, responsive design, and seamless deployment on Netlify.
 
+> **🎯 2025 Optimized**: Latest update includes Brave Search API 2025 compliance, enhanced error handling, centralized architecture, and Docker improvements. See [OPTIMIZATION-REPORT.md](OPTIMIZATION-REPORT.md) for full details.
+
 ## Screenshots
 
 ### Main Chat Interface
@@ -14,9 +16,9 @@ A modern, real-time AI chat application built with Next.js 15 and integrated wit
 
 ### Advanced AI Capabilities
 - **Tool Calling System**: AI can execute code, solve math problems, analyze data, and search the web
-- **Real-time Web Search**: K2 models can access current information and news via WebSearch tool
-- **Real-time Streaming**: Word-by-word response generation
-- **12 Official Models**: Including latest Kimi K2 family with 1T parameters
+- **Real-time Web Search**: Brave Search API with 2025 compliance and zero token cost
+- **Real-time Streaming**: Word-by-word response generation with parallel tool execution
+- **13+ Official Models**: Including latest Kimi K1.5, K2 family, and moonshot-v1-auto
 
 ### Cost Transparency
 - **Live Token Estimation**: See costs before sending requests
@@ -160,15 +162,16 @@ docker run -p 3000:3000 \
 
 ## AI Models (Official from Moonshot API)
 
-**12 Official Models Available** - Directly sourced from `https://api.moonshot.ai/v1/models`:
+**13+ Official Models Available** - Directly sourced from `https://api.moonshot.ai/v1/models`:
 
 | Model ID | Name | Badge | Description | Special Features |
 |----------|------|-------|-------------|------------------|
 | `kimi-k2-turbo-preview` | **Kimi K2 Turbo** | Turbo | Fastest K2 model with optimized speed | Speed optimized |
 | `kimi-k2-0905-preview` | **Kimi K2 (Sept 2024)** | Enhanced | September 2024 K2 with enhanced performance | Latest K2 features |
+| `kimi-k1.5` | **Kimi K1.5** | Reasoning | GPT-4 level performance in math/coding (Jan 2025) | Advanced reasoning |
 | `kimi-latest` | **Kimi Latest** | Latest | Always the newest and most advanced Kimi model | Auto-updates to latest |
 | `kimi-thinking-preview` | **Kimi Thinking** | Reasoning | Advanced reasoning with step-by-step thinking | Chain-of-thought |
-| `moonshot-v1-auto` | **Auto-Select (Moonshot only)** | Smart | Selects best Moonshot model - cannot exceed K2 family | Intelligent routing |
+| `moonshot-v1-auto` | **Auto-Select** | Smart | Auto-selects optimal model for cost efficiency | Intelligent routing |
 | `moonshot-v1-32k-vision-preview` | **Vision (32K)** | Vision | Image understanding + 32K context | Multimodal |
 | `moonshot-v1-128k` | **Moonshot V1 (128K)** | Large Context | 128K token context for long documents | Extended context |
 | `moonshot-v1-32k` | **Moonshot V1 (32K)** | Extended | 32K token context for conversations | Balanced |

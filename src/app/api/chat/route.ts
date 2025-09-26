@@ -12,6 +12,7 @@
 
 import { OpenAIStream, StreamingTextResponse } from 'ai'
 import OpenAI from 'openai'
+import { ALL_ALLOWED_MODELS, getDefaultModel } from '../../../lib/models'
 
 /**
  * Create OpenAI client configured for Kimi API
@@ -60,24 +61,8 @@ export async function POST(req: Request) {
       )
     }
 
-    // Security: Validate model is in allowed list - OFFICIAL from Moonshot API /v1/models
-    // Ordered by performance: Best K2 models first, then latest, then other models
-    const allowedModels = [
-      'kimi-k2-turbo-preview',
-      'kimi-k2-0905-preview',
-      'kimi-latest',
-      'kimi-thinking-preview',
-      'moonshot-v1-auto',
-      'moonshot-v1-32k-vision-preview',
-      'moonshot-v1-128k',
-      'moonshot-v1-32k',
-      'moonshot-v1-8k',
-      // Additional models from API response but not in UI (for completeness)
-      'kimi-k2-0711-preview',
-      'moonshot-v1-8k-vision-preview',
-      'moonshot-v1-128k-vision-preview'
-    ]
-    const selectedModel = allowedModels.includes(model) ? model : 'kimi-k2-turbo-preview'
+    // Security: Validate model using centralized configuration
+    const selectedModel = ALL_ALLOWED_MODELS.includes(model) ? model : getDefaultModel().id
 
     // Security: Validate messages structure and content
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -261,105 +246,53 @@ export async function POST(req: Request) {
       console.log('Context provided:', context.slice(0, 100) + (context.length > 100 ? '...' : ''))
     }
 
-    // Try non-streaming first to see if tools are called
-    // Important: Avoid mixing Partial Mode with streaming when tools are involved
+    // Hybrid approach: Try native tool calling first, fallback to streaming
+    // This provides the best of both worlds - native tools when possible, streaming when needed
     let completion
 
     try {
       completion = await openai.chat.completions.create({
         model: selectedModel,               // Use the selected model from frontend
-        stream: false,                      // Start with non-streaming to handle tool calls properly
+        stream: false,                      // Start with non-streaming for tool detection
         messages: contextualMessages,       // Pass the conversation history with context to the AI
         tools: tools,                       // Enable tool calling capabilities
-        temperature: 0.7,                   // Balanced creativity for tool usage
-        // Explicitly avoid response_format=json_object when using tools to prevent Partial Mode conflicts
+        temperature: 0.6,                   // Optimal for K2 models (per Moonshot recommendations)
+        tool_choice: "auto",                // Let model decide when to use tools
       })
 
       console.log('Received response from Kimi API')
       const message = completion.choices[0].message
 
-      // Check if the model wants to call tools (standard OpenAI format)
+      // Streamlined tool call detection - prioritize native format
       let toolCallsToExecute = message.tool_calls || []
 
-      // Also check if tool calls are embedded in the content as text (Moonshot Partial Mode behavior)
-      // The models might be using Partial Mode to generate tool call JSON
+      // Fallback: Check for tool calls embedded in content (Moonshot sometimes does this)
       if (toolCallsToExecute.length === 0 && message.content) {
-        console.log('Checking content for tool calls (potential Partial Mode):', message.content.slice(0, 200) + '...')
+        console.log('Checking content for embedded tool calls:', message.content.slice(0, 200) + '...')
 
-        // Try different patterns to extract tool calls
-        let extractedToolCalls = []
+        // Simplified pattern matching - look for complete tool call JSON
+        const toolCallPattern = /\{"tool_calls":\s*\[([\s\S]*?)\]\}/
+        const toolCallMatch = message.content.match(toolCallPattern)
 
-        // Pattern 1: Complete JSON object
-        let toolCallMatch = message.content.match(/\{"tool_calls":\s*\[([\s\S]*?)\]\}/)
         if (toolCallMatch) {
           try {
             const toolCallsData = JSON.parse(`{"tool_calls":[${toolCallMatch[1]}]}`)
-            extractedToolCalls = toolCallsData.tool_calls || []
+            toolCallsToExecute = toolCallsData.tool_calls || []
+            console.log('Extracted tool calls from content:', toolCallsToExecute)
+
+            // Clean up the content by removing the tool call JSON
+            message.content = message.content.replace(toolCallPattern, '').trim()
           } catch (parseError) {
-            console.log('Pattern 1 failed:', parseError)
+            console.log('Failed to parse embedded tool calls:', parseError)
+            // Skip tool execution if parsing fails - let client-side detection handle it
           }
         }
 
-        // Pattern 2: Just the array part
-        if (extractedToolCalls.length === 0) {
-          toolCallMatch = message.content.match(/\[\s*\{\s*"id":\s*"[^"]*",\s*"type":\s*"function"[\s\S]*?\]\s*\}/)
-          if (toolCallMatch) {
-            try {
-              const toolCallsArray = JSON.parse(toolCallMatch[0].replace(/\}\s*$/, ''))
-              extractedToolCalls = Array.isArray(toolCallsArray) ? toolCallsArray : [toolCallsArray]
-            } catch (parseError) {
-              console.log('Pattern 2 failed:', parseError)
-            }
-          }
-        }
-
-        // Pattern 3: Individual tool call objects
-        if (extractedToolCalls.length === 0) {
-          const individualMatches = message.content.match(/\{\s*"id":\s*"[^"]*",\s*"type":\s*"function",\s*"function":\s*\{[\s\S]*?\}\s*\}/g)
-          if (individualMatches) {
-            for (const match of individualMatches) {
-              try {
-                const toolCall = JSON.parse(match)
-                extractedToolCalls.push(toolCall)
-              } catch (parseError) {
-                console.log('Individual tool call parse failed:', parseError)
-              }
-            }
-          }
-        }
-
-        // Special handling for incomplete tool calls (Partial Mode scenario)
-        if (extractedToolCalls.length === 0 && message.content) {
-          // Check for incomplete tool call patterns that might need completion
-          // Pattern matches: "text:{"tool_calls":[" or just "{"tool_calls":["
-          const partialToolCallPattern = /\{"tool_calls":\s*\[.*$/
-          if (partialToolCallPattern.test(message.content)) {
-            console.log('Detected partial tool call pattern - skipping Partial Mode to prevent 504 timeout on Netlify')
-
-            // Find where the tool call JSON starts
-            const jsonStartIndex = message.content.indexOf('{"tool_calls":')
-            const prefixText = message.content.substring(0, jsonStartIndex)
-            const partialJson = message.content.substring(jsonStartIndex)
-
-            console.log('Prefix text:', prefixText)
-            console.log('Partial JSON:', partialJson.slice(0, 100) + '...')
-
-            // Partial Mode disabled for Netlify to prevent 504 timeouts
-            // Instead, clean up the message for user display
-            message.content = prefixText.trim() || 'I detected a request for tool usage, but the response was incomplete. Please try asking again with a simpler request.'
-            console.log('Partial Mode skipped, returning simplified response to user')
-          }
-        }
-
-        if (extractedToolCalls.length > 0) {
-          console.log('Found tool calls in content field:', extractedToolCalls)
-          toolCallsToExecute = extractedToolCalls
-          // Clean up the content by removing tool call patterns
-          message.content = message.content
-            .replace(/\{"tool_calls":\s*\[([\s\S]*?)\]\}/, '')
-            .replace(/\[\s*\{\s*"id":\s*"[^"]*",\s*"type":\s*"function"[\s\S]*?\]\s*\}/, '')
-            .replace(/\{\s*"id":\s*"[^"]*",\s*"type":\s*"function",\s*"function":\s*\{[\s\S]*?\}\s*\}/g, '')
-            .trim()
+        // If content contains partial tool calls, clean it for display
+        if (message.content.includes('{"tool_calls":')) {
+          const jsonStart = message.content.indexOf('{"tool_calls":')
+          const prefixText = message.content.substring(0, jsonStart).trim()
+          message.content = prefixText || 'Processing tool request...'
         }
       }
 
