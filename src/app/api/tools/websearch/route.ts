@@ -97,19 +97,25 @@ export async function POST(req: Request) {
       braveUrl.searchParams.append('spellcheck', 'true')        // Auto-correct queries
       braveUrl.searchParams.append('summary', 'false')          // Disable AI summary for faster results
 
+      console.log(`🔍 Brave Search URL: ${braveUrl.toString()}`)
+      console.log(`🔑 API Key present: ${!!process.env.BRAVE_SEARCH_API_KEY}`)
+
       const response = await fetchWithTimeout(braveUrl.toString(), {
         method: 'GET',
         headers: {
           'X-Subscription-Token': process.env.BRAVE_SEARCH_API_KEY!,
           'Accept': 'application/json',
           'Accept-Encoding': 'gzip',
-          'User-Agent': 'Kimi-Chat-App/1.0' // Good practice for API identification
+          'User-Agent': 'Kimi-Chat-App/1.0'
         }
       }, 10000)
 
+      console.log(`📊 Brave API Response: ${response.status} ${response.statusText}`)
+
       if (!response.ok) {
         const errorText = await response.text()
-        handleExternalApiError('Brave Search API', response, errorText)
+        console.error(`❌ Brave API Error: ${response.status} - ${errorText}`)
+        throw new Error(`Brave Search API failed: ${response.status} ${response.statusText}`)
       }
 
       const data = await response.json()

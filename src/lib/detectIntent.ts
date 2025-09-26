@@ -28,11 +28,12 @@ const TOOL_PATTERNS: IntentPattern[] = [
                             /\bwebsite\b/i.test(text);
 
       // PRIORITY 1: Special case for website/URL analysis (most specific)
-      const urlMatch = text.match(/\b(?:find|search|look up|analyze|check|web)\b.*?([a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/i);
+      const urlMatch = text.match(/\b(?:find|search|look up|analyze|check|web)\b.*?([a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})*(?:\/[^\s]*)?)/i);
       if (urlMatch) {
+        console.log('🎯 URL pattern matched:', urlMatch[1]);
         return {
-          query: `site:${urlMatch[1]} OR ${urlMatch[1]}`,
-          max_results: 3,
+          query: urlMatch[1], // Just search for the domain directly, not site: operator
+          max_results: 5,
           scrape_first: true  // Always scrape for URL analysis
         };
       }
@@ -146,7 +147,33 @@ export function detectIntent(text: string): ToolCall | null {
  * Check if we've already called this tool to prevent duplicates
  */
 export function shouldCallTool(toolCall: ToolCall, alreadyCalled: Set<string>): boolean {
-  const key = `${toolCall.name}_${JSON.stringify(toolCall.arguments)}`;
+  // For WebSearch, normalize the query to prevent similar searches
+  let key = `${toolCall.name}_${JSON.stringify(toolCall.arguments)}`;
+
+  if (toolCall.name === 'WebSearch' && toolCall.arguments.query) {
+    // Normalize query for better duplicate detection
+    const normalizedQuery = String(toolCall.arguments.query)
+      .toLowerCase()
+      .replace(/[^\w\s.-]/g, '') // Remove special chars except dots and dashes
+      .replace(/\s+/g, ' ')      // Normalize spaces
+      .trim();
+
+    // Create a simpler key for WebSearch to catch similar queries
+    key = `WebSearch_${normalizedQuery}`;
+
+    // Also check for partial matches to prevent spam
+    for (const existingKey of alreadyCalled) {
+      if (existingKey.startsWith('WebSearch_')) {
+        const existingQuery = existingKey.replace('WebSearch_', '');
+        // If queries are very similar (contain each other), skip
+        if (normalizedQuery.includes(existingQuery) || existingQuery.includes(normalizedQuery)) {
+          console.log(`Skipping similar WebSearch: "${normalizedQuery}" (already called "${existingQuery}")`);
+          return false;
+        }
+      }
+    }
+  }
+
   if (alreadyCalled.has(key)) return false;
 
   alreadyCalled.add(key);
