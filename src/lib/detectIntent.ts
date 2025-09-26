@@ -19,7 +19,7 @@ const TOOL_PATTERNS: IntentPattern[] = [
   // WebSearch patterns
   {
     name: 'WebSearch',
-    trigger: /\b(search|look up|google|find|query|research)\b.*?\b(for|about|regarding|information)\b/i,
+    trigger: /\b(search|look up|google|find|query|research|web)\b/i,
     extractor: (text: string) => {
       // Detect if detailed content analysis is needed
       const needsScraping = /\b(purpose|what is|what does|content|analyze|summary|details|meaning|about)\b/i.test(text) ||
@@ -27,7 +27,17 @@ const TOOL_PATTERNS: IntentPattern[] = [
                             /\bsite\b/i.test(text) ||
                             /\bwebsite\b/i.test(text);
 
-      // Extract quoted phrases first
+      // PRIORITY 1: Special case for website/URL analysis (most specific)
+      const urlMatch = text.match(/\b(?:find|search|look up|analyze|check|web)\b.*?([a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/i);
+      if (urlMatch) {
+        return {
+          query: `site:${urlMatch[1]} OR ${urlMatch[1]}`,
+          max_results: 3,
+          scrape_first: true  // Always scrape for URL analysis
+        };
+      }
+
+      // PRIORITY 2: Extract quoted phrases
       const quoted = text.match(/[""]([^""]+)[""]/);
       if (quoted) return {
         query: quoted[1],
@@ -35,7 +45,7 @@ const TOOL_PATTERNS: IntentPattern[] = [
         scrape_first: needsScraping
       };
 
-      // Extract after "for/about/regarding/information"
+      // PRIORITY 3: Extract after "for/about/regarding/information"
       const afterFor = text.match(/\b(?:for|about|regarding|information\s+(?:about|on))\s+([^.!?]+)/i);
       if (afterFor) return {
         query: afterFor[1].trim(),
@@ -43,13 +53,13 @@ const TOOL_PATTERNS: IntentPattern[] = [
         scrape_first: needsScraping
       };
 
-      // Special case for website/URL analysis
-      const urlMatch = text.match(/\b(?:find|search|look up|analyze|check)\b.*?([a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/i);
-      if (urlMatch) {
+      // PRIORITY 4: Extract after "purpose of", "find", etc.
+      const purposeMatch = text.match(/\b(?:purpose of|find|search for|look up)\s+([^.!?]+)/i);
+      if (purposeMatch) {
         return {
-          query: `site:${urlMatch[1]} OR ${urlMatch[1]}`,
+          query: purposeMatch[1].trim(),
           max_results: 3,
-          scrape_first: true  // Always scrape for URL analysis
+          scrape_first: needsScraping
         };
       }
 
