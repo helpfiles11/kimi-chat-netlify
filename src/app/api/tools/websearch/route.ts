@@ -135,15 +135,36 @@ export async function POST(req: Request) {
 
         const results: SearchResult[] = []
 
-        for (const item of data.web.results.slice(0, max_results)) {
+        for (const item of data.web.results.slice(0, max_results * 2)) { // Get more results to filter ads
           // More flexible validation - allow partial results
           if (item && typeof item === 'object' && item.title && item.url) {
-            results.push({
-              title: String(item.title).trim(),
-              url: String(item.url).trim(),
-              snippet: String(item.description || item.snippet || '').trim() || 'No description available',
-              source: String(item.profile?.name || item.meta_url?.hostname || 'Brave Search').trim()
-            })
+
+            // Filter out ads and promotional content
+            const isAd = item.is_ad === true ||
+                        item.type === 'ad' ||
+                        item.type === 'promoted' ||
+                        item.profile?.is_ad === true ||
+                        String(item.title).toLowerCase().includes('[ad]') ||
+                        String(item.snippet || item.description || '').toLowerCase().includes('[ad]') ||
+                        String(item.url).includes('googleads.g.doubleclick.net') ||
+                        String(item.url).includes('/aclk?') ||
+                        String(item.url).includes('&gclid=')
+
+            if (!isAd && results.length < max_results) {
+              results.push({
+                title: String(item.title).trim(),
+                url: String(item.url).trim(),
+                snippet: String(item.description || item.snippet || '').trim() || 'No description available',
+                source: String(item.profile?.name || item.meta_url?.hostname || 'Brave Search').trim()
+              })
+            } else if (isAd) {
+              console.log('Filtered out ad result:', {
+                title: String(item.title).substring(0, 50),
+                url: String(item.url).substring(0, 50),
+                type: item.type,
+                is_ad: item.is_ad
+              })
+            }
           } else {
             console.log('Skipping incomplete result:', {
               hasTitle: !!item?.title,

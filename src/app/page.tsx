@@ -15,7 +15,7 @@ import { KIMI_MODELS, getBadgeStyles } from '../lib/models'
  * that connects to the Kimi AI API through our backend API route.
  *
  * How it works:
- * 1. Uses the 'useChat' hook from Vercel's AI SDK to manage chat state
+ * 1. Uses the 'useChat' hook from the AI SDK to manage chat state
  * 2. The hook automatically handles message history, streaming responses, and form submission
  * 3. When user submits a message, it sends a POST request to '/api/chat' (our backend route)
  * 4. The backend streams the AI response back, which is automatically handled by useChat
