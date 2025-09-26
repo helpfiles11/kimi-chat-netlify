@@ -1,4 +1,5 @@
 # Netlify configuration for static website
+# Note: Remove Next.js plugin from Netlify dashboard UI for static deployment
 [build]
   command = "echo 'Static site ready'"
   publish = "public"
