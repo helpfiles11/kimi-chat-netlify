@@ -99,20 +99,20 @@ export async function POST(req: Request) {
 
       const html = await response.text()
 
-      // Extract title
-      const titleMatch = html.match(/<title[^>]*>(.*?)<\/title>/is)
+      // Extract title (using compatible regex flags)
+      const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)
       const title = titleMatch ? titleMatch[1].trim().replace(/\s+/g, ' ') : 'No title found'
 
       // Clean and extract text content
       let content = html
         // Remove script and style tags with their content
-        .replace(/<script[^>]*>.*?<\/script>/gis, ' ')
-        .replace(/<style[^>]*>.*?<\/style>/gis, ' ')
-        .replace(/<noscript[^>]*>.*?<\/noscript>/gis, ' ')
+        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, ' ')
+        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, ' ')
+        .replace(/<noscript[^>]*>[\s\S]*?<\/noscript>/gi, ' ')
         // Remove HTML comments
-        .replace(/<!--.*?-->/gs, ' ')
+        .replace(/<!--[\s\S]*?-->/g, ' ')
         // Remove other non-content tags
-        .replace(/<(head|header|nav|footer|aside|svg)[^>]*>.*?<\/\1>/gis, ' ')
+        .replace(/<(head|header|nav|footer|aside|svg)[^>]*>[\s\S]*?<\/\1>/gi, ' ')
         // Remove all remaining HTML tags
         .replace(/<[^>]+>/g, ' ')
         // Decode HTML entities

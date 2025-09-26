@@ -8,6 +8,20 @@ import UsageInfo from '../components/UsageInfo'
 import { detectIntent, shouldCallTool, type ToolCall } from '../lib/detectIntent'
 import { KIMI_MODELS, getBadgeStyles } from '../lib/models'
 
+// Type for search results with optional scraped content
+interface SearchResultWithContent {
+  title: string
+  url: string
+  snippet: string
+  source: string
+  scraped_content?: {
+    title: string
+    content: string
+    word_count: number
+    scraped_at: string
+  }
+}
+
 /**
  * Main Chat Component
  *
@@ -506,7 +520,7 @@ export default function Chat() {
                           {toolResult.toolCall.name === 'WebSearch' && toolResult.result?.data?.results && (
                             <div>
                               <p className="mb-2"><strong>Search Results:</strong></p>
-                              {toolResult.result.data.results.slice(0, 3).map((res, idx: number) => (
+                              {toolResult.result.data.results.slice(0, 3).map((res: SearchResultWithContent, idx: number) => (
                                 <div key={idx} className="mb-2 p-2 bg-white dark:bg-gray-700 rounded">
                                   <a
                                     href={res.url}
@@ -540,7 +554,7 @@ export default function Chat() {
                               ))}
 
                               {/* Show provider info with scraping indicator */}
-                              {toolResult.result?.data?.scraped_content && (
+                              {(toolResult.result?.data as { scraped_content?: boolean })?.scraped_content && (
                                 <div className="mt-2 text-xs text-green-600 dark:text-green-400">
                                   ✨ Enhanced with page content analysis
                                 </div>

@@ -149,7 +149,7 @@ export function shouldCallTool(toolCall: ToolCall, alreadyCalled: Set<string>): 
 export function detectIntentWithContext(
   currentChunk: string,
   fullResponse: string,
-  _conversationContext: string[]
+  _conversationContext?: string[] // Optional unused parameter for future context-aware detection
 ): ToolCall[] {
   const tools: ToolCall[] = [];
 
