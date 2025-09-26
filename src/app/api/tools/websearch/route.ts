@@ -17,7 +17,6 @@ import {
   validateStringField,
   validateNumericField,
   ApiLogger,
-  handleExternalApiError,
   fetchWithTimeout
 } from '../../../../lib/api-utils'
 

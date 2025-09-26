@@ -17,6 +17,7 @@ A modern, real-time AI chat application built with Next.js 15 and integrated wit
 ### Advanced AI Capabilities
 - **Tool Calling System**: AI can execute code, solve math problems, analyze data, and search the web
 - **Real-time Web Search**: Brave Search API with 2025 compliance and zero token cost
+- **AI Grounding API**: New Brave AI Grounding for AI-generated answers with verifiable sources
 - **Real-time Streaming**: Word-by-word response generation with parallel tool execution
 - **13+ Official Models**: Including latest Kimi K1.5, K2 family, and moonshot-v1-auto
 
@@ -40,7 +41,7 @@ A modern, real-time AI chat application built with Next.js 15 and integrated wit
 - **Frontend**: Next.js 15.5, React 19, TypeScript 5
 - **Styling**: Tailwind CSS v4 with CSS-in-JS
 - **AI Integration**: Moonshot AI via OpenAI-compatible SDK v4
-- **Tool System**: Custom tool calling with code execution and web search
+- **Tool System**: Custom tool calling with code execution, web search, and AI grounding
 - **File Processing**: Multi-format support with server upload
 - **Streaming**: Vercel AI SDK v3 with real-time responses
 - **Cost Tracking**: Token estimation and balance monitoring

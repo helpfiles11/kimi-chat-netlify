@@ -150,6 +150,20 @@ export function validateNumericField(
 }
 
 /**
+ * Validate boolean field
+ */
+export function validateBooleanField(
+  value: unknown,
+  fieldName: string
+): Response | null {
+  if (typeof value !== 'boolean') {
+    return createErrorResponse(`${fieldName} must be a boolean (true/false)`, 400)
+  }
+
+  return null
+}
+
+/**
  * Log API request with timing
  */
 export class ApiLogger {

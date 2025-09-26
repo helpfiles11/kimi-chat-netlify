@@ -149,6 +149,35 @@ export async function POST(req: Request) {
       {
         type: "function" as const,
         function: {
+          name: "AIGrounding",
+          description: "Get AI-generated answers with verifiable web sources using Brave's AI Grounding API. Provides direct answers with citations for complex questions requiring research.",
+          parameters: {
+            type: "object",
+            properties: {
+              query: {
+                type: "string",
+                description: "Question or query that needs a comprehensive, researched answer with sources"
+              },
+              enable_research: {
+                type: "boolean",
+                description: "Allow multiple searches for complex queries (default: false)"
+              },
+              enable_citations: {
+                type: "boolean",
+                description: "Include citations and sources in the response (default: true)"
+              },
+              enable_entities: {
+                type: "boolean",
+                description: "Enable entity extraction for better context (default: false)"
+              }
+            },
+            required: ["query"]
+          }
+        }
+      },
+      {
+        type: "function" as const,
+        function: {
           name: "CodeRunner",
           description: "A code executor that supports running Python and JavaScript code",
           parameters: {
@@ -346,6 +375,17 @@ export async function POST(req: Request) {
                   body: JSON.stringify(params)
                 })
                 toolResult = await calcResponse.json()
+                break
+              }
+
+              case 'AIGrounding': {
+                const params = JSON.parse(args)
+                const groundingResponse = await fetch(`${req.url.split('/api/chat')[0]}/api/tools/ai-grounding`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(params)
+                })
+                toolResult = await groundingResponse.json()
                 break
               }
 
