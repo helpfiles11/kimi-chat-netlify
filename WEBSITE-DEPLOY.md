@@ -46,9 +46,9 @@ Add screenshot images to `public/images/` and update the HTML to include them in
 
 ## 💰 Cost Highlight
 
-The website emphasizes the 93% cost savings compared to ChatGPT Plus:
-- ChatGPT Plus: $20/month
-- Claude Pro: $20/month
-- Kimi Chat: ~$1.50/month (typical usage)
+The website emphasizes the 93% cost savings compared to other subscription based solutions:
+- Others: ususually around $20/month
+- Kimi Chat: ~$1.50/month (typical usage with 10.000 tokens/day)
+- Access to brand new, feature rich preview models and time based promotions from moonshot.cn
 
 Perfect for attracting cost-conscious users! 🎯
