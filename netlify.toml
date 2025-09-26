@@ -1,7 +1,6 @@
 # Netlify configuration for Kimi Chat Next.js application
 [build]
   command = "npm run build"
-  publish = "."
 
 # Headers for security
 [[headers]]
