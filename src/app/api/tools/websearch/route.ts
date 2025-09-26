@@ -87,15 +87,10 @@ export async function POST(req: Request) {
       braveUrl.searchParams.append('q', query)
       braveUrl.searchParams.append('count', Math.min(max_results, 20).toString()) // Max 20 per API spec
 
-      // Add search optimization parameters (2025 API compliant)
-      braveUrl.searchParams.append('search_lang', 'en')
-      braveUrl.searchParams.append('ui_lang', 'en-US')
+      // Use only documented core parameters to avoid API errors
       braveUrl.searchParams.append('country', 'US')
-      braveUrl.searchParams.append('safesearch', 'moderate')
-      braveUrl.searchParams.append('text_decorations', 'false') // Clean snippets without highlighting
-      braveUrl.searchParams.append('extra_snippets', 'true')    // More context per result
-      braveUrl.searchParams.append('spellcheck', 'true')        // Auto-correct queries
-      braveUrl.searchParams.append('summary', 'false')          // Disable AI summary for faster results
+      braveUrl.searchParams.append('search_lang', 'en')
+      braveUrl.searchParams.append('spellcheck', 'true')
 
       console.log(`🔍 Brave Search URL: ${braveUrl.toString()}`)
       console.log(`🔑 API Key present: ${!!process.env.BRAVE_SEARCH_API_KEY}`)
@@ -105,10 +100,10 @@ export async function POST(req: Request) {
         headers: {
           'X-Subscription-Token': process.env.BRAVE_SEARCH_API_KEY!,
           'Accept': 'application/json',
-          'Accept-Encoding': 'gzip',
           'User-Agent': 'Kimi-Chat-App/1.0'
+          // Removed Accept-Encoding to avoid potential issues
         }
-      }, 10000)
+      }, 15000) // Increased timeout
 
       console.log(`📊 Brave API Response: ${response.status} ${response.statusText}`)
 
