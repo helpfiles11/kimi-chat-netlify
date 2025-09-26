@@ -108,6 +108,29 @@ export async function POST(req: Request) {
         break
       }
 
+      case 'WebScrape': {
+        try {
+          const scrapeResponse = await fetch(new URL('/api/tools/webscrape', req.url), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(args)
+          })
+
+          if (scrapeResponse.ok) {
+            const data = await scrapeResponse.json()
+            result = data
+          } else {
+            const errorText = await scrapeResponse.text()
+            success = false
+            error = `WebScrape API error: ${scrapeResponse.status} ${errorText}`
+          }
+        } catch (err) {
+          success = false
+          error = `WebScrape execution failed: ${err instanceof Error ? err.message : 'Unknown error'}`
+        }
+        break
+      }
+
       default:
         success = false
         error = `Unknown tool: ${name}`

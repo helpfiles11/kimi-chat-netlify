@@ -24,6 +24,7 @@ import {
 interface WebSearchRequest {
   query: string
   max_results?: number
+  scrape_first?: boolean  // Auto-scrape the top result for detailed content
 }
 
 interface SearchResult {
@@ -31,6 +32,12 @@ interface SearchResult {
   url: string
   snippet: string
   source: string
+  scraped_content?: {
+    title: string
+    content: string
+    word_count: number
+    scraped_at: string
+  }
 }
 
 export async function POST(req: Request) {
@@ -45,7 +52,7 @@ export async function POST(req: Request) {
     const bodyValidation = validateRequestBody(body, ['query'])
     if (bodyValidation) return bodyValidation
 
-    const { query: queryParam, max_results = 5 } = body as WebSearchRequest
+    const { query: queryParam, max_results = 5, scrape_first = false } = body as WebSearchRequest
     query = queryParam
 
     // Validate query field
@@ -230,13 +237,51 @@ export async function POST(req: Request) {
       }
     }
 
-    logger.logSuccess(`Found ${searchResults.length} results for: "${query}"`)
+    // Auto-scrape first result if requested for detailed content
+    if (scrape_first && searchResults.length > 0) {
+      const firstResult = searchResults[0]
+      logger.logSuccess(`Auto-scraping top result: ${firstResult.url}`)
+
+      try {
+        // Internal call to our scraping endpoint
+        const scrapeResponse = await fetch(new URL('/api/tools/webscrape', req.url), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            url: firstResult.url,
+            max_length: 3000  // Reasonable length for AI analysis
+          })
+        })
+
+        if (scrapeResponse.ok) {
+          const scrapeData = await scrapeResponse.json()
+          if (scrapeData.success) {
+            // Add scraped content to the first result
+            searchResults[0].scraped_content = {
+              title: scrapeData.title,
+              content: scrapeData.content,
+              word_count: scrapeData.word_count,
+              scraped_at: scrapeData.scraped_at
+            }
+            logger.logSuccess(`Successfully scraped ${scrapeData.word_count} words from top result`)
+          } else {
+            logger.logWarning(`Failed to scrape top result: ${scrapeData.error}`)
+          }
+        }
+      } catch (scrapeError) {
+        // Don't fail the whole search if scraping fails
+        logger.logWarning(`Auto-scraping failed: ${scrapeError instanceof Error ? scrapeError.message : 'Unknown error'}`)
+      }
+    }
+
+    logger.logSuccess(`Found ${searchResults.length} results for: "${query}"${scrape_first ? ' (with content scraping)' : ''}`)
 
     return createSuccessResponse({
       results: searchResults,
       query: query.trim(),
-      search_provider: 'Brave Search API',
-      results_count: searchResults.length
+      search_provider: 'Brave Search API' + (scrape_first ? ' + Web Scraper' : ''),
+      results_count: searchResults.length,
+      scraped_content: scrape_first && searchResults[0]?.scraped_content ? true : false
     })
 
   } catch (error) {

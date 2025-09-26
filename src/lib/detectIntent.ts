@@ -21,24 +21,56 @@ const TOOL_PATTERNS: IntentPattern[] = [
     name: 'WebSearch',
     trigger: /\b(search|look up|google|find|query|research)\b.*?\b(for|about|regarding|information)\b/i,
     extractor: (text: string) => {
+      // Detect if detailed content analysis is needed
+      const needsScraping = /\b(purpose|what is|what does|content|analyze|summary|details|meaning|about)\b/i.test(text) ||
+                            /\.(com|org|net|app|io)\b/i.test(text) || // URLs mentioned
+                            /\bsite\b/i.test(text) ||
+                            /\bwebsite\b/i.test(text);
+
       // Extract quoted phrases first
       const quoted = text.match(/[""]([^""]+)[""]/);
-      if (quoted) return { query: quoted[1], max_results: 3 };
+      if (quoted) return {
+        query: quoted[1],
+        max_results: 3,
+        scrape_first: needsScraping
+      };
 
       // Extract after "for/about/regarding/information"
       const afterFor = text.match(/\b(?:for|about|regarding|information\s+(?:about|on))\s+([^.!?]+)/i);
-      if (afterFor) return { query: afterFor[1].trim(), max_results: 3 };
+      if (afterFor) return {
+        query: afterFor[1].trim(),
+        max_results: 3,
+        scrape_first: needsScraping
+      };
+
+      // Special case for website/URL analysis
+      const urlMatch = text.match(/\b(?:find|search|look up|analyze|check)\b.*?([a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/i);
+      if (urlMatch) {
+        return {
+          query: `site:${urlMatch[1]} OR ${urlMatch[1]}`,
+          max_results: 3,
+          scrape_first: true  // Always scrape for URL analysis
+        };
+      }
 
       // Special case for comet queries
       const cometMatch = text.match(/\b(?:comet|asteroid)\s+([^.!?]+)/i);
       if (cometMatch) {
-        return { query: `comet ${cometMatch[1].trim()}`, max_results: 3 };
+        return {
+          query: `comet ${cometMatch[1].trim()}`,
+          max_results: 3,
+          scrape_first: needsScraping
+        };
       }
 
       // Extract object names (like "3I Atlas", "Borisov", etc.)
       const objectMatch = text.match(/\b([A-Z0-9]+[\/\-\s][A-Za-z0-9]+|[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/);
       if (objectMatch) {
-        return { query: objectMatch[1].trim(), max_results: 3 };
+        return {
+          query: objectMatch[1].trim(),
+          max_results: 3,
+          scrape_first: needsScraping
+        };
       }
 
       return null;

@@ -518,8 +518,33 @@ export default function Chat() {
                                   </a>
                                   <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{res.snippet}</div>
                                   <div className="text-xs text-gray-400 dark:text-gray-500 mt-1 truncate">{res.url}</div>
+
+                                  {/* Show scraped content if available (first result only) */}
+                                  {idx === 0 && res.scraped_content && (
+                                    <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                                      <div className="flex items-center justify-between mb-2">
+                                        <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                                          📄 Page Content Analysis
+                                        </span>
+                                        <span className="text-xs text-blue-600 dark:text-blue-400">
+                                          {res.scraped_content.word_count} words
+                                        </span>
+                                      </div>
+                                      <div className="text-sm text-gray-700 dark:text-gray-300 max-h-32 overflow-y-auto">
+                                        {res.scraped_content.content.substring(0, 500)}
+                                        {res.scraped_content.content.length > 500 && '...'}
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                               ))}
+
+                              {/* Show provider info with scraping indicator */}
+                              {toolResult.result?.data?.scraped_content && (
+                                <div className="mt-2 text-xs text-green-600 dark:text-green-400">
+                                  ✨ Enhanced with page content analysis
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
